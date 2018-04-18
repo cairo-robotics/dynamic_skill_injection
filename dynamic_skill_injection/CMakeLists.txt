@@ -10,6 +10,7 @@ project(dynamic_skill_injection)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
+  movo_7dof_moveit_config
   dynamic_skill_injection_msgs
 )
 
@@ -105,7 +106,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES dynamic_skill_injection
-#  CATKIN_DEPENDS other_catkin_pkg
+CATKIN_DEPENDS std_msgs dynamic_skill_injection_msgs
 #  DEPENDS system_lib
 )
 
