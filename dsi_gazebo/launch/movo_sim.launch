@@ -13,7 +13,7 @@
 
     <!-- Bring up the moveit -->
     <node if="$(optenv MOVO_HAS_KINOVA_ARM_7DOF false)" pkg="si_utils" type="timed_roslaunch"
-        args="10 dynamic_skill_injection movo_moveit.launch info:=true"
+        args="10 dsi_gazebo movo_moveit.launch info:=true"
         name="moveit_bringup" output="screen"/>
         
     <!-- Bring up the demo -->
