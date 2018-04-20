@@ -2,12 +2,17 @@
 
 import rospy
 
+
+
+import sys
+import tf
 from gazebo_msgs.msg import ModelStates
 from geometry_msgs.msg import Pose, Twist
 
 
 class readGazebo(object):
 
+    #TODO convert predicate dictionary to JSON and make it loadable
     predicate_dict = {"cafe_beer" : "non_static",
                       "pringles": "non_static",
                       "test_zone": "building",
@@ -27,14 +32,25 @@ class readGazebo(object):
         print data.name
         self.counter = 0
         for i, obj in enumerate(data.name):
-            self.dict[obj] = {"location": _pose_to_tuple(data.pose[i]),
-                              "velocity": _twist_to_tuple(data.twist[i]),
-                              "type":}
+            log_name = self._dict_checker(obj)
+            self.dict[obj] = {"location": self._pose_to_tuple(data.pose[i]),
+                              "velocity": self._twist_to_tuple(data.twist[i]),
+                              "type": "test"}
+            sys.stdout.write(obj+" : ")
+            print self.dict[obj]["location"]
+
+
+        print
 
 
     def _dict_checker(self, name):
         '''checks if object is in dictionary and creates ros info for new '''
-        pass
+        try:
+            self.dict[name]
+        except:
+            rospy.loginfo("new object {} created".format(name))
+            return name
+
 
     def _dict_remove(self):
         ''' removes objects that are no longer being published '''
@@ -45,12 +61,26 @@ class readGazebo(object):
         pass
 
     def _pose_to_tuple(self, pose):
-        ''' take in a ros pose message and convert to tuple '''
-        pass
+        ''' take in a ros pose message and convert to list '''
+        data = []
+        data.append(pose.position.x)
+        data.append(pose.position.y)
+        data.append(pose.position.z)
+        quaternion = (
+            pose.orientation.x,
+            pose.orientation.y,
+            pose.orientation.z,
+            pose.orientation.w)
+        euler = tf.transformations.euler_from_quaternion(quaternion)
+        ''' Euler angles in radians '''
+        data.append(euler[0]) #Roll
+        data.append(euler[1]) #Pitch
+        data.append(euler[2]) #Yaw
+        return data
 
     def _twist_to_tuple(self, twist):
         ''' take in twist message and convert to tuple '''
-        pass
+        return 1
 
     def _predicate_adder(self, obj):
         ''' adds predicates based on object type '''
@@ -75,9 +105,7 @@ if __name__ == '__main__':
     gazebo_reader = readGazebo(ws_dict=world_space_dict)
     sub = rospy.Subscriber("/gazebo/model_states", ModelStates, gazebo_reader.parser)
 
-
-
     try:
         rospy.spin()
     except:
-        pass
+        rospy.logerror("mister meeseeks is finally free")
