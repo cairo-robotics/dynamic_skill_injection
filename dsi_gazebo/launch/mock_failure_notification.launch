@@ -1,0 +1,9 @@
+<launch>
+
+  <!-- Run the mock task network publisher -->
+  <node name="task_network_publisher" pkg="dsi_task_planning" type="mock_task_network.py" respawn="true" output="screen" />
+
+  <!-- Run the mock world state publisher -->
+  <node name="world_state_publisher" pkg="dsi_world_state" type="mock_world_state.py" respawn="true" output="screen" />
+
+</launch>
