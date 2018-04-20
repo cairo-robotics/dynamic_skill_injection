@@ -33,11 +33,11 @@ class readGazebo(object):
         self.counter = 0
         for i, obj in enumerate(data.name):
             log_name = self._dict_checker(obj)
-            self.dict[obj] = {"location": self._pose_to_tuple(data.pose[i]),
-                              "velocity": self._twist_to_tuple(data.twist[i]),
+            self.dict[obj] = {"location": self._pose_to_list(data.pose[i]),
+                              "velocity": self._twist_to_list(data.twist[i]),
                               "type": "test"}
             sys.stdout.write(obj+" : ")
-            print self.dict[obj]["location"]
+            print self.dict[obj]["velocity"]
 
 
         print
@@ -60,7 +60,7 @@ class readGazebo(object):
         ''' takes object name and gives it a type '''
         pass
 
-    def _pose_to_tuple(self, pose):
+    def _pose_to_list(self, pose):
         ''' take in a ros pose message and convert to list '''
         data = []
         data.append(pose.position.x)
@@ -78,9 +78,16 @@ class readGazebo(object):
         data.append(euler[2]) #Yaw
         return data
 
-    def _twist_to_tuple(self, twist):
-        ''' take in twist message and convert to tuple '''
-        return 1
+    def _twist_to_list(self, twist):
+        ''' take in twist message and convert to list linear then angular'''
+        data = []
+        data.append(twist.linear.x)
+        data.append(twist.linear.y)
+        data.append(twist.linear.z)
+        data.append(twist.angular.x)
+        data.append(twist.angular.y)
+        data.append(twist.angular.z)
+        return data
 
     def _predicate_adder(self, obj):
         ''' adds predicates based on object type '''
