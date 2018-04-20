@@ -1,2 +1,4 @@
 Header header
-string world_state_json
+
+# World State encoded as a JSON string.
+string world_state

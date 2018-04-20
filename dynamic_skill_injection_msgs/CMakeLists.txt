@@ -53,6 +53,7 @@ add_message_files(
   WorldState.msg
   TaskNetwork.msg
   TaskCommand.msg
+  TaskFailureNotification.msg
 )
 
 ## Generate services in the 'srv' folder

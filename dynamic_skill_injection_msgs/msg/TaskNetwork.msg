@@ -1,4 +1,6 @@
 Header header
+
+# Name of task/subtask of the above operators.
 string task_name
 
 # Leaf subtask of HTN with no lower hierarchy. Operators are onelevel above raw action execution.
