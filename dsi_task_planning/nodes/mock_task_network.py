@@ -21,7 +21,7 @@ effect = {
 
 def current_planning_step(task_name, operator, effect):
     pub = rospy.Publisher('dsi/current_task_network', TaskNetwork, queue_size=10)
-    rospy.init_node('task_network_pub', anonymous=False)
+    rospy.init_node('task_network_publisher', anonymous=False)
     rate = rospy.Rate(10)  # 10hz
     while not rospy.is_shutdown():
         tn_msg = TaskNetwork()

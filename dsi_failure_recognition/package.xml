@@ -51,7 +51,7 @@
   <depend>movo_description</depend>
   <depend>rospy</depend>
   <depend>std_msgs</depend>
-  <depend>movo_7dof_moveit_config</depend>
+  <depend>movo_7dof_moveit_config</depend>  
   <depend>dynamic_skill_injection_msgs</depend>
   <exec_depend>moveit_ros_move_group</exec_depend>
   <exec_depend>moveit_kinematics</exec_depend>

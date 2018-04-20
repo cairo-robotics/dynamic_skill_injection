@@ -6,4 +6,7 @@
   <!-- Run the mock world state publisher -->
   <node name="world_state_publisher" pkg="dsi_world_state" type="mock_world_state.py" respawn="true" output="screen" />
 
+  <!-- Run the mock world state publisher -->
+  <node name="failure_notification_publisher" pkg="dsi_failure_recognition" type="mock_failure_recognition.py" respawn="true" output="screen" />
+
 </launch>

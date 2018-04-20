@@ -12,7 +12,7 @@ world_state = {
         "location_str": [["in", "kitchen1"], ["on", "table1"]],
         "size": [5.0, 5.0, 5.0],
         # Goal is to have detected go from False -> True
-        "detected": True,
+        "detected": False,
         "open": True,
         "empty": True
     }
@@ -21,7 +21,7 @@ world_state = {
 
 def current_world_state(world_state):
     pub = rospy.Publisher('dsi/current_world_state', WorldState, queue_size=10)
-    rospy.init_node('world_state_pub', anonymous=False)
+    rospy.init_node('world_state_publisher', anonymous=False)
     rate = rospy.Rate(10)  # 10hz
     while not rospy.is_shutdown():
         ws_msg = WorldState()
