@@ -6,23 +6,24 @@ import rospy
 
 import sys
 import tf
+import json
 from gazebo_msgs.msg import ModelStates
 from geometry_msgs.msg import Pose, Twist
 
 
 class readGazebo(object):
 
-    #TODO convert predicate dictionary to JSON and make it loadable
-    predicate_dict = {"cafe_beer" : "non_static",
-                      "pringles": "non_static",
-                      "test_zone": "building",
-                      "folding_table_4x2": "static" }
-
     ''' class to read objects from gazebo and place in world state dictionary '''
     def __init__(self, ws_dict, freq=10):
         self.count = 1000/freq
         self.counter = 0
         self.dict = ws_dict
+        #TODO convert predicate dictionary to JSON and make it loadable
+        self.predicate_dict = {"cafe_beer" : "non_static",
+                               "pringles": "non_static",
+                               "test_zone": "building",
+                               "folding_table_4x2": "static",
+                               "movo": "robot"}
 
     def parser(self, data):
         if self.counter < self.count:
@@ -31,33 +32,47 @@ class readGazebo(object):
 
         print data.name
         self.counter = 0
-        for i, obj in enumerate(data.name):
-            log_name = self._dict_checker(obj)
-            self.dict[obj] = {"location": self._pose_to_list(data.pose[i]),
-                              "velocity": self._twist_to_list(data.twist[i]),
-                              "type": "test"}
-            sys.stdout.write(obj+" : ")
-            print self.dict[obj]["velocity"]
+        for i, obj_name in enumerate(data.name):
+            log_name = self._dict_checker(obj_name)
+            if log_name is not None:
+                self._dict_new_obj(obj_name)
 
-
+            self.dict[obj_name] = {"location": self._pose_to_list(data.pose[i]),
+                                   "velocity": self._twist_to_list(data.twist[i])}
+                                   #TODO move _name to type to _dict_checker
+            sys.stdout.write(obj_name+" : ")
+            #print self.dict[obj_name]["type"]
         print
 
 
-    def _dict_checker(self, name):
+    def _dict_new_obj(self, obj_name):
+        ''' initializes new object within the world state dictionary'''
+
+        #self.dict[obj_name] = {""}
+        pass
+
+
+    def _dict_checker(self, obj_name):
         '''checks if object is in dictionary and creates ros info for new '''
         try:
-            self.dict[name]
+            self.dict[obj_name]
         except:
-            rospy.loginfo("new object {} created".format(name))
-            return name
+            rospy.loginfo("new object {} created".format(obj_name))
+            return obj_name
 
 
-    def _dict_remove(self):
+    def _dict_remove(self, ):
         ''' removes objects that are no longer being published '''
         pass
 
     def _name_to_type(self, name):
         ''' takes object name and gives it a type '''
+        #TODO unhappy with this method
+        for key in  self.predicate_dict:
+            ''' check if type exists'''
+            if key in name:
+                print "found"
+
         pass
 
     def _pose_to_list(self, pose):
