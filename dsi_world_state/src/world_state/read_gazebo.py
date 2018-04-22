@@ -1,7 +1,6 @@
 #! /usr/bin/env python2
 
 import rospy
-import sys
 import tf
 import json
 from gazebo_msgs.msg import ModelStates
