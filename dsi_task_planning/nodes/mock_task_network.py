@@ -9,8 +9,8 @@ effect = {
     "mug1": {
         "type": "container",
         "location_xyz": [0, 0, 0, 0, 0, 0],
-        "location_str": [["in", "kitchen1"], ["on", "table1"]],
-        "size": [5.0, 5.0, 5.0],
+        "location_str": [["on", "table1"], ["in", "kitchen2"]],
+        "size": [5.0, 5.0, 6.0],
         # Goal is to have detected go from False -> True
         "detected": True,
         "open": True,
