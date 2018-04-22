@@ -1,5 +1,5 @@
 Header header
 string task_name
 string operator
-bool status
+bool success
 string expected_effect
