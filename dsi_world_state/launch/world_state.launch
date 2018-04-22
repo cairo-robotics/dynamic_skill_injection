@@ -1,0 +1,7 @@
+<launch>
+
+  <arg name="config_file" default="config1.json"/>
+  <param name="/dsi/world_state/config_file_location" value="$(find dsi_world_state)/config/$(arg config_file)"/>
+  <node pkg="dsi_world_state" type="world_state_node.py" name="world_state" output="screen"/>
+
+</launch>
