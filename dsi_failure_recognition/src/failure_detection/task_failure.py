@@ -48,6 +48,12 @@ class TaskFailureDetector(object):
         effect : dict
             State dictionary of an object of the TaskNetwork message JSON encoded effect.
 
+        Returns
+        ----------
+        world_state : tuple (dict, bool)
+            Returns a 2-tuple. The first element is a dictionary of the expected effects not present in world state.
+            The second element is a boolean representing success or failure.
+
         """
         expected_effect = {}
         status = True
@@ -111,7 +117,7 @@ class TaskFailureDetector(object):
 
             tfn_msg.task_name = self.task_network_msg.task_name
             tfn_msg.operator = self.task_network_msg.operator
-            tfn_msg.status = failure_status
+            tfn_msg.success = failure_status
             tfn_msg.expected_effect = json.dumps(expected_effect)
 
         return tfn_msg
