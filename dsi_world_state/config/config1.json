@@ -4,28 +4,30 @@
     "test_zone": "none",
     "cafe_beer": "non_static",
     "folding_table_4x2":"static",
-    "pringles":"non_static"
+    "pringles":"non_static",
+    "beer":"non_static"
     },
-  "agent":{
-    "location_xyz":[0, 0, 0, 0, 0, 0],
-    "location_str":["None"],
-    "size":[0, 0, 0],
-    "left_hand_empty":["True"],
-    "right_hand_empty":["True"],
-    "carrying":["None"]
-  },
-  "non_static":{
-    "location_xyz":[0, 0, 0, 0, 0, 0],
-    "location_str":["None"],
-    "size":[0, 0, 0],
-  },
-  "static":{
-
-  },
-  "robot":{
-
-  },
-  "none":{
-
+  "obj_primitives":{
+    "agent":{
+      "location_xyz":[0, 0, 0, 0, 0, 0],
+      "location_str":["None"],
+      "size":[0, 0, 0],
+      "left_hand_empty":["True"],
+      "right_hand_empty":["True"],
+      "carrying":["None"]
+    },
+    "non_static":{
+      "location_xyz":[0, 0, 0, 0, 0, 0],
+      "location_str":["None"],
+      "size":[0, 0, 0]
+    },
+    "static":{
+      "location_xyz":[0, 0, 0, 0, 0, 0],
+      "location_str":["None"],
+      "size":[0, 0, 0]
+    },
+    "none":{
+      "location_xyz":[0, 0, 0, 0, 0, 0]
+    }
   }
- }
+}

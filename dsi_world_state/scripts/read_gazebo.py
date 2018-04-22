@@ -1,82 +1,139 @@
 #! /usr/bin/env python2
 
 import rospy
-
-
-
 import sys
 import tf
 import json
 from gazebo_msgs.msg import ModelStates
 from geometry_msgs.msg import Pose, Twist
-
+from std_msgs.msg import String
 
 class readGazebo(object):
-
     ''' class to read objects from gazebo and place in world state dictionary '''
-    def __init__(self, ws_dict, freq=10):
-        self.count = 1000/freq
+    #TODO use parameter server for json_path and freq
+    def __init__(self, ws_dict, freq=10, json_path="/home/jeff/movo_ws/src/dynamic_skill_injection/dsi_world_state/config/config1.json"):
+        """
+        initialize the gazebo reading class object
+
+        Parameters
+        ----------
+        ws_dict: world space dictionary
+        freq: frequency at which dictionary will be updated and published
+        json_path: The location of the json configuration file
+        """
+        self.hz_count = 1000/freq
         self.counter = 0
         self.dict = ws_dict
-        #TODO convert predicate dictionary to JSON and make it loadable
-        self.predicate_dict = {"cafe_beer" : "non_static",
-                               "pringles": "non_static",
-                               "test_zone": "building",
-                               "folding_table_4x2": "static",
-                               "movo": "robot"}
+        configs = json.load(open(json_path))
+        self.obj_types = configs['obj_types']
+        self.obj_primitives = configs['obj_primitives']
+        rospy.Subscriber("/gazebo/model_states", ModelStates, self.parser)
+        self.pub_ws = rospy.Publisher("/dsi/world_state", String, queue_size=1)
 
     def parser(self, data):
-        if self.counter < self.count:
+        """
+        takes gazebo data and places into dictionary to be sent out on then
+        world state topic TODO
+
+        Parameters
+        ---------
+        data: the data from the topic "/gazebo/model_states"
+        """
+        if self.counter < self.hz_count:
             self.counter += 1
             return
 
-        print data.name
         self.counter = 0
+        self._dict_purge(data.name)
         for i, obj_name in enumerate(data.name):
-            log_name = self._dict_checker(obj_name)
-            if log_name is not None:
-                self._dict_new_obj(obj_name)
-
-            self.dict[obj_name] = {"location": self._pose_to_list(data.pose[i]),
-                                   "velocity": self._twist_to_list(data.twist[i])}
-                                   #TODO move _name to type to _dict_checker
-            sys.stdout.write(obj_name+" : ")
-            #print self.dict[obj_name]["type"]
-        print
-
+            self._dict_checker(obj_name)
+            self.dict[obj_name]["location"] =  self._pose_to_list(data.pose[i])
+            self.dict[obj_name]["velocity"] = self._twist_to_list(data.twist[i])
+            #Just dump whole dict together?
+            rospy.logdebug(obj_name + " : " + json.dumps(self.dict[obj_name]))
+        self.pub_ws.publish(json.dumps(self.dict))
 
     def _dict_new_obj(self, obj_name):
-        ''' initializes new object within the world state dictionary'''
+        """
+        Initializes new object within the world state dictionary
 
-        #self.dict[obj_name] = {""}
-        pass
-
+        Parameters
+        ----------
+        obj_name: name of object from the gazebo world
+        """
+        try:
+            type = self._name_to_type(obj_name)
+            self.dict[obj_name] = self.obj_primitives[type]
+        except:
+            rospy.logerror("error create object: {}".format(obj_name))
 
     def _dict_checker(self, obj_name):
-        '''checks if object is in dictionary and creates ros info for new '''
+        """
+        checks if object is in dictionary and calls _dict_new_obj to created
+        objects that don't yet exist in dictinary.
+
+        Parameters
+        ----------
+        obj_name: name of object from the gazebo world
+        """
         try:
             self.dict[obj_name]
         except:
+            self._dict_new_obj(obj_name)
             rospy.loginfo("new object {} created".format(obj_name))
-            return obj_name
+
+    def _dict_purge(self, obj_names):
+        """
+        removes objects that are no longer being published
+        publishes info message for the object
+
+        Parameters
+        ----------
+        obj_names: list of all objects currenly in gazebo
+        """
+        for name in self.dict:
+            if name in obj_names:
+                pass
+            else:
+                del self.dict[name]
+                rospy.loginfo("{} was removed from dictionary".format(name))
+                # cannot change dictionart size durring iteration
+                # will catch multiple removes succesively
+                break
 
 
-    def _dict_remove(self, ):
-        ''' removes objects that are no longer being published '''
-        pass
+    def _name_to_type(self, obj_name):
+        """
+        takes object name and gives it a type if no tyype exists return
+        none
 
-    def _name_to_type(self, name):
-        ''' takes object name and gives it a type '''
+        Parameters
+        ----------
+        obj_name: name of object from the gazebo world
+
+        Returns
+        -------
+        string: the type of object
+        """
         #TODO unhappy with this method
-        for key in  self.predicate_dict:
-            ''' check if type exists'''
-            if key in name:
-                print "found"
-
-        pass
+        for key in self.obj_types:
+            if key in obj_name:
+                return self.obj_types[key]
+        rospy.logwarn("object {} does not exist".format(obj_name))
+        return "none"
 
     def _pose_to_list(self, pose):
-        ''' take in a ros pose message and convert to list '''
+        """
+        Takes in a ros Pose message and converts to a list
+
+        Parameters
+        ----------
+        pose: ros pose message
+
+        Returns
+        -------
+        list: list of pose data
+        """
         data = []
         data.append(pose.position.x)
         data.append(pose.position.y)
@@ -94,7 +151,17 @@ class readGazebo(object):
         return data
 
     def _twist_to_list(self, twist):
-        ''' take in twist message and convert to list linear then angular'''
+        """
+        Takes in a ros Twist message and converts to a list
+
+        Parameters
+        ----------
+        Twist: ros Twist message
+
+        Returns
+        -------
+        list: list of twist data
+        """
         data = []
         data.append(twist.linear.x)
         data.append(twist.linear.y)
@@ -104,28 +171,11 @@ class readGazebo(object):
         data.append(twist.angular.z)
         return data
 
-    def _predicate_adder(self, obj):
-        ''' adds predicates based on object type '''
-        pass
-
-    def _non_static_pred(self):
-        ''' adds predicates for non static objects '''
-        pass
-
-    def _static_pred(self):
-        ''' adds predicates for static objects '''
-
-    def _building_pred(self):
-        ''' adds predicates for buildings '''
-
-
-
 
 if __name__ == '__main__':
     rospy.init_node('World_Reader')
     world_space_dict = {}
     gazebo_reader = readGazebo(ws_dict=world_space_dict)
-    sub = rospy.Subscriber("/gazebo/model_states", ModelStates, gazebo_reader.parser)
 
     try:
         rospy.spin()
