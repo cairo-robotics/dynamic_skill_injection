@@ -19,8 +19,8 @@ if __name__ == '__main__':
     # things yet
     world_space_dict = {}
     gazebo_reader = readGazebo(ws_dict=world_space_dict, json_path=config_loc )
-
-    abstraction_engine = abstractionEngine(world_space_dict)
+    rospy.sleep(1)
+    abstraction_engine = abstractionEngine(world_space_dict, config_loc)
 
     try:
         rospy.spin()

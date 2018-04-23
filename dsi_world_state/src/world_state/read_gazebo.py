@@ -45,10 +45,11 @@ class readGazebo(object):
 
         self.counter = 0
         self._dict_purge(data.name)
-        print data.name
         for i, obj_name in enumerate(data.name):
             self._dict_checker(obj_name)
-            self.dict[obj_name]["location_xyzrpq"] =  self._pose_to_list(data.pose[i])
+            pose_array = self._pose_to_list(data.pose[i])
+            self.dict[obj_name]["location_xyz"] = pose_array[0:3]
+            self.dict[obj_name]["orientation_rpq"] = pose_array[3:6]
             self.dict[obj_name]["velocity"] = self._twist_to_list(data.twist[i])
             #Just dump whole dict together?
             rospy.logdebug(obj_name + " : " + json.dumps(self.dict[obj_name]))
@@ -67,6 +68,7 @@ class readGazebo(object):
             self.dict[obj_name] = self.type_primitives[obj_type]
             for key in self.obj_primitives[obj_name]:
                 self.dict[obj_name][key] = self.obj_primitives[obj_base][key]
+                print self.dict[obj_name]
 
         except:
             rospy.logerr("error create object: {}".format(obj_name))
