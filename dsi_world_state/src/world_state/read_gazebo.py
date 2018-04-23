@@ -25,6 +25,7 @@ class readGazebo(object):
         self.dict = ws_dict
         configs = json.load(open(json_path))
         self.obj_types = configs['obj_types']
+        self.type_primitives = configs['type_primitives']
         self.obj_primitives = configs['obj_primitives']
         rospy.Subscriber("/gazebo/model_states", ModelStates, self.parser)
         self.pub_ws = rospy.Publisher("/dsi/world_state", String, queue_size=1)
@@ -44,9 +45,10 @@ class readGazebo(object):
 
         self.counter = 0
         self._dict_purge(data.name)
+        print data.name
         for i, obj_name in enumerate(data.name):
             self._dict_checker(obj_name)
-            self.dict[obj_name]["location"] =  self._pose_to_list(data.pose[i])
+            self.dict[obj_name]["location_xyzrpq"] =  self._pose_to_list(data.pose[i])
             self.dict[obj_name]["velocity"] = self._twist_to_list(data.twist[i])
             #Just dump whole dict together?
             rospy.logdebug(obj_name + " : " + json.dumps(self.dict[obj_name]))
@@ -61,10 +63,13 @@ class readGazebo(object):
         obj_name: name of object from the gazebo world
         """
         try:
-            type = self._name_to_type(obj_name)
-            self.dict[obj_name] = self.obj_primitives[type]
+            obj_type, obj_base = self._name_to_type(obj_name)
+            self.dict[obj_name] = self.type_primitives[obj_type]
+            for key in self.obj_primitives[obj_name]:
+                self.dict[obj_name][key] = self.obj_primitives[obj_base][key]
+
         except:
-            rospy.logerror("error create object: {}".format(obj_name))
+            rospy.logerr("error create object: {}".format(obj_name))
 
     def _dict_checker(self, obj_name):
         """
@@ -100,7 +105,6 @@ class readGazebo(object):
                 # will catch multiple removes succesively
                 break
 
-
     def _name_to_type(self, obj_name):
         """
         takes object name and gives it a type if no tyype exists return
@@ -112,12 +116,14 @@ class readGazebo(object):
 
         Returns
         -------
-        string: the type of object
+        obj_type: the type of object
+        obj_base: the object base name
         """
-        #TODO unhappy with this method
-        for key in self.obj_types:
-            if key in obj_name:
-                return self.obj_types[key]
+        #TODO unhappy with this method error with beer vs cafe_beer
+        for obj_base in self.obj_types:
+            if obj_base in obj_name:
+                obj_type = self.obj_types[obj_base]
+                return obj_type, obj_base
         rospy.logwarn("object {} does not exist".format(obj_name))
         return "none"
 

@@ -1,15 +1,17 @@
 {
   "obj_types":{
-    "movo":"agent",
-    "test_zone": "none",
+    "movo": "agent",
     "cafe_beer": "non_static",
+    "beer": "non_static",
+    "pringles": "non_static",
     "folding_table_4x2":"static",
-    "pringles":"non_static",
-    "beer":"non_static"
+    "test_zone": "none",
+    "ground_plane": "none"
     },
-  "obj_primitives":{
+
+  "type_primitives":{
     "agent":{
-      "location_xyz":[0, 0, 0, 0, 0, 0],
+      "location_xyzrpq":[0, 0, 0, 0, 0, 0],
       "location_str":["None"],
       "size":[0, 0, 0],
       "left_hand_empty":["True"],
@@ -28,6 +30,22 @@
     },
     "none":{
       "location_xyz":[0, 0, 0, 0, 0, 0]
+    }
+  },
+
+  "obj_primitives":{
+    "beer":{
+      "dimensions": [0.12, 0.12, 0.23]
+    },
+    "folding_table_4x2":{
+      "_comment":"dimensions are wrong need to scrape stl",
+      "dimensions": [1.0, 1.0, 1.0]
+    },
+    "cafe_beer":{
+      "dimensions":[0.066, 0.066, 0.122]
+    },
+    "pringles":{
+      "dimensions":[0.066, 0.066, 0.2667]
     }
   }
 }
