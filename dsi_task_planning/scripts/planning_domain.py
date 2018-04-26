@@ -114,15 +114,16 @@ def turn_on_lights(state, lights):
 # Define the methods
 def navigate_to(state, tgt):
     robot_loc = state['robot1']['location_str']
+    robot_room = get_tgt_room('robot1')
+    path = find_path(state, robot_room, tgt)
+    for idx, loc in range(len(path)):
 
-def go_get(state, obj, loc):
 
-def deliver_to(state, obj, tgt):
+
+
 
 def fetch(state, obj, loc, tgt):
 
-
-pyhop.declare_methods('travel',travel_by_foot,travel_by_taxi)
 
 # def travel_by_foot(state,a,x,y):
 #     if state.dist[x][y] <= 2:
