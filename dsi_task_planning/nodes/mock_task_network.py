@@ -12,10 +12,9 @@ effect = {
         "location_str": [["on", "table1"], ["in", "kitchen1"]],
         "size": [5.0, 5.0, 5.0],
         # Goal is to have detected go from False -> True
-        "detected": False,
+        "detected": True,
         "open": True,
-        "empty": True,
-        "some_new_feature": True
+        "empty": True
     }
 }
 

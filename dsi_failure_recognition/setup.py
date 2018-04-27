@@ -3,7 +3,7 @@ from distutils.core import setup
 from catkin_pkg.python_setup import generate_distutils_setup
 
 d = generate_distutils_setup()
-d['packages'] = ['failure_detection']
+d['packages'] = ['failure_detection', 'failure_resolution']
 d['package_dir'] = {'': 'src'}
 
 setup(**d)
