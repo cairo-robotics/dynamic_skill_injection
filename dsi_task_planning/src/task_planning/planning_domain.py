@@ -42,7 +42,6 @@ def determine_door(state, a, b):
     return door_from_a_to_b
 
 # Define the operators
-
 def move_to(state, tgt):
     room = get_tgt_room(state, tgt)
     state['robot1']['location_str'] = [('in', room)]
@@ -67,7 +66,6 @@ def detect(state, obj):
         return state
     else:
         return False
-
 
 def pickup(state, obj):
     room = get_tgt_room(state, obj)
