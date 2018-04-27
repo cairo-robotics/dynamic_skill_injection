@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 '''
-Functions for turning numerical representations of objects into predicate statements
+Definition of the operators and methods for the planning domain
 '''
 
 # Utilities
@@ -33,6 +33,13 @@ def find_path(state, a, b):
         if room_b!=b:
             path.append(b)
     return path
+
+def determine_door(state, a, b):
+    door_from_a_to_b = None
+    for door in state[a]['doors']:
+        if a in state[door]['location_str'] and b in state[door]['location_str']:
+            door_from_a_to_b = door
+    return door_from_a_to_b
 
 # Define the operators
 
@@ -116,21 +123,23 @@ def navigate_to(state, tgt):
     robot_loc = state['robot1']['location_str']
     robot_room = get_tgt_room('robot1')
     path = find_path(state, robot_room, tgt)
-    for idx, loc in range(len(path)):
+    for idx in range(len(path)-1):
+        start = path[idx]
+        dest = path[idx+1]
+        if state[dest]['type']=='room':
+            door = determine_door(state, start, dest)
+            if door:
+                move_to(state, door)
+                open_door(state, door)
+                move_to(state, dest)
+        else:
+            move_to(state, dest)
+    return state
 
-
-
-
-
-def fetch(state, obj, loc, tgt):
-
-
-# def travel_by_foot(state,a,x,y):
-#     if state.dist[x][y] <= 2:
-#         return [('walk',a,x,y)]
-#     return False
-#
-# def travel_by_taxi(state,a,x,y):
-#     if state.cash[a] >= taxi_rate(state.dist[x][y]):
-#         return [('call_taxi',a,x), ('ride_taxi',a,x,y), ('pay_driver',a)]
-#     return False
+def fetch(state, obj, loc, preposition, tgt):
+    navigate_to(state, loc)
+    detect(state, obj)
+    pickup(state, obj)
+    navigate_to(state, tgt)
+    set_down(state, obj, preposition, tgt)
+    return state
