@@ -9,7 +9,6 @@ import json
 Functions for turning numerical representations of objects into predicate statements
 '''
 
-
 class abstractionEngine(object):
 	def __init__(self, ws_dict, json_path, update_rate = 1,  vert_meas_tol = 0.05):
 		"""
@@ -31,7 +30,12 @@ class abstractionEngine(object):
 
 	def callback(self, event):
 		"""
-		pulls out objects to be compared in abstraction engine
+		pulls out objects to be compared in abstraction engine using a timer
+		rather than a subscriptino callback
+
+		Parameters
+		----------
+		event: standard call back data for timed callback
 		"""
 		obj_abst_array = []
 		for obj in self.ws_dict:
@@ -43,10 +47,18 @@ class abstractionEngine(object):
 		self.generalize_batch(obj_abst_array)
 
 
-
 	def generalize_batch(self, obj_list):
+		"""
+		Batch loops through acceptable objects to create relationships
+
+		Parameters
+		----------
+		obj_list: list of objects to check relationships for
+		"""
 		for obj1 in obj_list:
 			obj1_loc_xyz = self.ws_dict[obj1]['location_xyz']
+			#clear relationships between each run
+			self.ws_dict[obj1]['location_str'] = []
 			obj1_loc_str = self.ws_dict[obj1]['location_str']
 			obj1_dims = self.ws_dict[obj1]['dimensions']
 			for obj2 in obj_list:
@@ -56,10 +68,10 @@ class abstractionEngine(object):
 					self.generalize_single(obj1_loc_str, obj1_loc_xyz, obj1_dims, obj2, obj2_loc_xyz, obj2_dims)
 
 	def generalize_single(self, obj1_loc_str, obj1_loc_xyz, obj1_dims, obj2, obj2_loc_xyz, obj2_dims):
+
 		relationship = self.get_relationship(obj1_loc_xyz, obj1_dims, obj2_loc_xyz, obj2_dims)
 		if relationship and relationship[0] and relationship not in obj1_loc_str:
 			obj1_loc_str.append((relationship, obj2))
-		print obj1_loc_str
 
 
 	def get_relationship(self, obj1_loc, obj1_dims, obj2_loc, obj2_dims):
