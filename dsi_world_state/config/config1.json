@@ -1,6 +1,8 @@
 {
   "obj_types":{
     "movo": "agent",
+    "blue_5m_room": "room",
+    "red_5m_room": "room",
     "cafe_beer": "non_static",
     "beer": "non_static",
     "pringles": "non_static",
@@ -11,7 +13,8 @@
 
     "abstract_list":[
       "non_static",
-      "static"
+      "static",
+      "room"
     ],
 
   "type_primitives":{
@@ -20,24 +23,26 @@
       "location_xyz":[0, 0, 0],
       "orientation_rpq":[0, 0, 0],
       "location_str":["None"],
-      "size":[0, 0, 0],
       "left_hand_empty":["True"],
       "right_hand_empty":["True"],
       "carrying":["None"]
+    },
+    "room":{
+      "type": "room",
+      "location_xyz":[0, 0, 0],
+      "orientation_rpq":[0, 0, 0]
     },
     "non_static":{
       "type":"non_static",
       "location_xyz":[0, 0, 0],
       "orientation_rpq":[0, 0, 0],
-      "location_str":["None"],
-      "size":[0, 0, 0]
+      "location_str":["None"]
     },
     "static":{
       "type":"static",
       "location_xyz":[0, 0, 0],
       "orientation_rpq":[0, 0, 0],
-      "location_str":["None"],
-      "size":[0, 0, 0]
+      "location_str":["None"]
     },
     "none":{
       "type":"none",
@@ -52,13 +57,21 @@
     },
     "folding_table_4x2":{
       "_comment":"dimensions are wrong need to scrape stl",
-      "dimensions": [1.0, 1.0, 1.0]
+      "dimensions": [1.0, 1.0, 0.5]
     },
     "cafe_beer":{
       "dimensions":[0.066, 0.066, 0.122]
     },
     "pringles":{
       "dimensions":[0.066, 0.066, 0.2667]
+    },
+    "blue_5m_room":{
+      "dimensions":[5.0, 5.0, 2.5],
+      "door": "unconfigured possibly location?"
+    },
+    "red_5m_room":{
+      "dimensions":[5.0, 5.0, 2.5],
+      "door": "unconfigured possibly location?"
     }
   }
 }
