@@ -13,6 +13,7 @@ world_state = {
         "size": [5.0, 5.0, 5.0],
         # Goal is to have detected go from False -> True
         "detected": False,
+        "lights_on": False,
         "open": True,
         "empty": True
     }
