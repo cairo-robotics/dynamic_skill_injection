@@ -1,0 +1,32 @@
+{
+  "_use_info":"we have 4 commands that can be used it this config pose_arm, joint_state, teleport_state, set_gripper",
+
+  "grab_beer":[{"action":"joint_state",
+                "joint_state":"left_grab_state"},
+
+                {"action": "set_gripper",
+                 "arm": "left",
+                 "position": "open"},
+
+               {"action":"pose_arm",
+                "object":"cafe_beer",
+                "linear_offset":[-0.1, 0, 0],
+                "arm": "left"},
+
+                {"action":"pose_arm",
+                 "object":"cafe_beer",
+                 "linear_offset":[0, 0, 0],
+                 "arm":"left"},
+
+                {"action": "set_gripper",
+                 "arm": "left",
+                 "position": "closed"},
+
+                {"action":"pose_arm",
+                  "object":"cafe_beer",
+                  "linear_offset":[0, 0, 0.2],
+                  "arm":"left"},
+
+                 {"action":"joint_state",
+                  "joint_state":"left_grab_state"}]
+}
