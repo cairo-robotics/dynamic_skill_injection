@@ -68,7 +68,7 @@ class readGazebo(object):
             self.dict[obj_name] = self.type_primitives[obj_type]
             for key in self.obj_primitives[obj_name]:
                 self.dict[obj_name][key] = self.obj_primitives[obj_base][key]
-                print self.dict[obj_name]
+            rospy.loginfo(self.dict[obj_name])
 
         except:
             rospy.logerr("error create object: {}".format(obj_name))
