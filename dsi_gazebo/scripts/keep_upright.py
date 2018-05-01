@@ -41,7 +41,7 @@ class holdMovoUpright(object):
         new_model_state.twist = model_state.twist
 
         self.set_model_state(new_model_state)
-        
+
 
 if __name__ == '__main__':
     movo_upright = holdMovoUpright()
