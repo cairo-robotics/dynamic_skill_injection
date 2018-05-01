@@ -1,0 +1,7 @@
+Header header
+string task_name
+string operator
+# failure_conditions are tentative.
+string failure_conditions
+---
+bool injection_status
