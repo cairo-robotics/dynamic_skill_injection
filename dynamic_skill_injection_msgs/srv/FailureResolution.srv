@@ -1,6 +1,3 @@
-# Name of task/subtask of the above operators.
-string task_name
-# Failing operator name.
 string operator
 string world_state
 ---
