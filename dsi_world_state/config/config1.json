@@ -1,4 +1,10 @@
 {
+  "abstract_list":[
+    "non_static",
+    "static",
+    "room"
+  ],
+
   "obj_types":{
     "movo": "agent",
     "blue_5m_room": "room",
@@ -9,13 +15,7 @@
     "folding_table_4x2":"static",
     "test_zone": "none",
     "ground_plane": "none"
-    },
-
-    "abstract_list":[
-      "non_static",
-      "static",
-      "room"
-    ],
+  },
 
   "type_primitives":{
     "agent":{
