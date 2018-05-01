@@ -1,5 +1,5 @@
 import json
-from dynamic_skill_injection_msgs.msg import TaskFailureNotification
+# from dynamic_skill_injection_msgs.msg import TaskFailureNotification
 
 
 class TaskFailureDetector(object):
@@ -25,11 +25,11 @@ class TaskFailureDetector(object):
 
         """
         world_state = json.loads(request.world_state)
-        effects_dict = json.loads(request.effects)
+        effects_dict = json.loads(request.effect)
         success, expected_effect = self.check_failure(world_state, effects_dict)
         response = {
             "success": success,
-            "expected_effect": expected_effect
+            "expected_effect": json.dumps(expected_effect)
         }
         return response
 
@@ -40,9 +40,9 @@ class TaskFailureDetector(object):
         Parameters
         ----------
         world_state : dict
-            State dictionary of an object of the WorldState message JSON encoded world state.
+            World state dictionary of the WorldState message JSON string world state field.
         effect : dict
-            State dictionary of an object of the TaskNetwork message JSON encoded effect.
+            Dictionary of expected effects of the TaskNetwork message JSON string effect field.
 
         Returns
         ----------
