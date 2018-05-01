@@ -1,0 +1,12 @@
+<launch>
+
+  <!-- Run the failure notification server -->
+  <node name="failure_notification_server" pkg="dsi_failure_recognition" type="failure_resolution_server.py" respawn="true" output="screen" />
+
+  <!-- Run the mock action_resolution publisher -->
+  <node name="action_resolution_publisher" pkg="dsi_failure_recognition" type="mock_action_resolution_publisher.py" respawn="true" output="screen" />
+
+  <!-- Run the mock action_resolution publisher -->
+  <node name="failure_notification_client" pkg="dsi_failure_recognition" type="failure_resolution_server_test.py" respawn="false" output="screen" />
+
+</launch>
