@@ -3,7 +3,7 @@
 import rospy
 import json
 from failure_detection.task_failure import TaskFailureDetector
-from dynamic_skill_injection_msgs.srv import TaskFailure
+from dynamic_skill_injection_msgs.srv import WorldState, TaskNetwork, TaskFailureNotification
 
 def detect_task_failure():
 
