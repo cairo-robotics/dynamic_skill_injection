@@ -28,8 +28,12 @@ if __name__ == '__main__':
     actions_loc = base_path + "/config/actions.json"
     #actions =json.load(open(actions_loc))
     test = actionServer()
+    rospy.sleep(2)
+    test.lgripper.command(.01)
+    rospy.sleep(1)
+    test.lgripper.command(0.55)
 
-    test.method_picker("grab_beer")
+
 
 
 

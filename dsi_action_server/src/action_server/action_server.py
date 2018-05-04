@@ -21,11 +21,12 @@ import moveit_commander
 from movo_action_clients.move_base_action_client import MoveBaseActionClient
 from movo_action_clients.gripper_action_client import GripperActionClient
 from dsi_world_state.srv import world_state
+from dsi_action_server.srv import action_service
 
 from geometry_msgs.msg import PoseStamped, Pose
 
 class actionServer(object):
-    def __init__(self, open_g=.01, closed=.35):
+    def __init__(self, configs="configs.json", methods="methodlib.json", open_g=.01, closed=.55):
         #TODO make config location as input / parameter server
         rospack = rospkg.RosPack()
         base_path = rospack.get_path("dsi_action_server")
@@ -55,6 +56,30 @@ class actionServer(object):
         ''' world state service '''
         rospy.wait_for_service('/dsi/world_state_server')
         self.world_state_service = rospy.ServiceProxy('/dsi/world_state_server', world_state)
+
+        ''' initialize action server service '''
+        s = rospy.Service('dsi/action_server', action_service, self.action_service)
+
+        rospy.loginfo("action server intitialized")
+
+
+
+    def action_service(self, req):
+        """
+        the action service to be called by
+
+        Parameters
+        ----------
+        """
+        print req.action_request
+        request = json.loads(req.action_request)
+        print request
+
+        if "method" in request:
+            self.method_picker(request["method"])
+            return "ran method"
+
+        return "error"
 
     def method_picker(self, method):
         """
@@ -97,7 +122,27 @@ class actionServer(object):
             else:
                 rospy.logwarn("method parser invalid action")
 
+    def teleport_parser(self, teleport_dict):
+        """
+        takes in teleport parameters into dictionary
+        Parameters
+        ----------
+        teleport_dict: dictionary of teleport parameters
+        """
+        tele_pose = Pose()
+
+
+        self.teleport(tele_pose)
+
     def joint_state_parser(self, joint_state_dict):
+        """
+        pareses the joint state dictionary into a useable form for the joint
+        state action
+
+        Parameters
+        ----------
+        joint_state_dict: dictionary of joint state action data
+        """
         try:
             joint_state_call = joint_state_dict["joint_state"]
         except Exception as e:
@@ -120,9 +165,26 @@ class actionServer(object):
 
 
     def set_gripper_parser(self, set_gripper_dict):
-        self.gripper_control(set_gripper_dict["position"], "left")
+        """
+        parses the gripper action based on the gripper dictionary item
 
-        pass
+
+        Parameters
+        ----------
+        set_gripper_dict: parses the gripper action dictionary
+        """
+        arm = "left"
+        if "arm" not in set_gripper_dict:
+            rospy.logwarn("no arm set in gripper dictionary")
+        else:
+            arm = set_gripper_dict["arm"]
+        if "position" not in set_gripper_dict:
+            rospy.logerr("no postion in gripper action")
+            return
+
+        position = set_gripper_dict["position"]
+        self.gripper_control(position, arm)
+        rospy.loginfo("gripper {} action executed set to {}".format(arm, position))
 
 
     def pose_arm_parser(self, pose_arm_dict):
@@ -130,9 +192,8 @@ class actionServer(object):
         Takes in pose based dictionary action items and executes them
 
         Parameters
-        action_dict:
         ----------
-
+        action_dict:
         """
         try:
             object = pose_arm_dict["object"]

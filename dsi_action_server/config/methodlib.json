@@ -27,6 +27,32 @@
                   "linear_offset":[0, 0, 0.2],
                   "arm":"left"},
 
-                 {"action":"joint_state",
-                  "joint_state":"left_grab_state"}]
+                {"action":"joint_state",
+                 "joint_state":"left_grab_state"}],
+
+  "open_close_open":[{"action":"set_gripper",
+                      "arm":"left",
+                      "position":"open"},
+
+                     {"action":"set_gripper",
+                      "arm":"left",
+                      "position":"closed"},
+
+                     {"action":"set_gripper",
+                      "arm":"left",
+                      "position":"open"}],
+
+  "open_hand":[{"action":"set_gripper",
+                 "arm":"left",
+                 "position":"open"}],
+
+  "close_hand":[{"action":"set_gripper",
+                  "arm":"left",
+                  "position":"closed"}],
+
+  "teleport_red":[{"action":"teleport_state",
+                   "location":"red_room",
+                   "offset":"[-0.5, 0.0, 0.0]",
+                   "orientation":"[0.0, 0.0, 0.0]"}]
+
 }
