@@ -1,0 +1,20 @@
+<library path="src">
+  <class name="Human Skill Injection" type="dsi_human_gui.gui.Interface" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      GUI plugin for human to inject skill
+    </description>
+    <qtgui>
+      <!-- optional grouping...
+      <group>
+        <label>Group</label>
+      </group>
+      <group>
+        <label>Subgroup</label>
+      </group>
+      -->
+      <label> Skill Injection GUI </label>
+      <icon type="theme">system-help</icon>
+      <statustip>User interface</statustip>
+    </qtgui>
+  </class>
+</library>
