@@ -1,0 +1,9 @@
+<launch>
+
+  <!-- Run the failure notification server -->
+  <node name="failure_notification_server" pkg="dsi_failure_recognition" type="failure_notification_server.py" respawn="true" output="screen" />
+
+  <!-- Run the failure notification example client -->
+  <node name="failure_notification_client" pkg="dsi_failure_recognition" type="failure_notification_server_test.py" respawn="false" output="screen" />
+
+</launch>

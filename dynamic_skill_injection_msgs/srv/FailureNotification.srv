@@ -1,0 +1,6 @@
+# Should be a dictionation of dictionaries i.e. {obj1:{attriute1:value, attrivute2:[value1, value2]}}
+string effect
+string world_state
+---
+bool success
+string expected_effect
