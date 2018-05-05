@@ -7,18 +7,60 @@ import Tkinter as tk
 from std_msgs.msg import String
 
 action_dictionary = {
-	"get_tgt_room" : ["Target"], 
-	"find_path" : ["Start Room", "Finish Room"], 
-	"determine_door" : ["Room 1", "Room 2"], 
-	"move_to" : ["Target"], 
-	"open_door" : ["Door Name"], 
-	"detect" : ["Object"], 
-	"pickup" : ["Object"], 
-	"set_down" : ["Object", "Preposition", "Target"], 
-	"unlock_door" : ["Door"],
-	"turn_on_lights" : ["Lights"], 
-	"navigate_to" : ["Target"], 
-	"fetch" : ["Object", "Location", "Preposition", "Target"]
+	"move_to" : {
+		"failure_conditions" : {
+
+		},
+		"parameterization" : ["Target"]
+	}, 
+	"open_door" : {
+		"failure_conditions" : {
+
+		},
+		"parameterization" : ["Door Name"]
+	}, 
+	"detect" : {
+		"failure_conditions" : {
+			"lights_on" : False
+		},
+		"parameterization" : ["Object"]
+	}, 
+	"pickup" : {
+		"failure_conditions" : {
+
+		},
+		"parameterization" : ["Object"]
+	}, 
+	"set_down" : {
+		"failure_conditions" : {
+
+		},
+		"parameterization" : ["Object", "Preposition", "Target"]
+	}, 
+	"unlock_door" : {
+		"failure_conditions" : {
+
+		},
+		"parameterization" : ["Door"]
+	},
+	"turn_on_lights" : {
+		"failure_conditions" : {
+
+		},
+		"parameterization" : ["Lights"]
+	}, 
+	"navigate_to" : {
+		"failure_conditions" : {
+
+		},
+		"parameterization" : ["Target"]
+	}, 
+	"fetch" : {
+		"failure_conditions" : {
+
+		},
+		"parameterization" : ["Object", "Location", "Preposition", "Target"]
+	}
 }
 sub = None
 pub = None
@@ -83,11 +125,12 @@ class UserWindow():
 		return mainframe
 
 	def submitFinal(self):
-		strCommand = self.command+":["
+		strCommand = self.command+":{'failure_conditions' : "+str(action_dictionary[self.command]["failure_conditions"]) \
+					+",'parameterization' : ["
 		for e in self.parameter_entrys:
 			strCommand = strCommand+e.get()+","
 		strCommand = strCommand[:len(strCommand)-1]
-		strCommand = strCommand+"]"
+		strCommand = strCommand+"]}"
 		pub.publish(strCommand)
 		self.close()
 
