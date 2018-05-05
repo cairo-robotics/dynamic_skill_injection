@@ -26,7 +26,7 @@ from dsi_action_server.srv import action_service
 from geometry_msgs.msg import PoseStamped, Pose
 
 class actionServer(object):
-    def __init__(self, configs="configs.json", methods="methodlib.json", open_g=.01, closed=.55):
+    def __init__(self, configs="configs.json", methods="methodlib.json", open_g=.01, closed=.5):
         #TODO make config location as input / parameter server
         rospack = rospkg.RosPack()
         base_path = rospack.get_path("dsi_action_server")
@@ -46,6 +46,13 @@ class actionServer(object):
         self.rgripper = GripperActionClient('right')
         self.gripper_open = open_g
         self.gripper_closed = closed
+
+        self.lgripper.command(self.gripper_open)
+        self.rgripper.command(self.gripper_open)
+        rospy.sleep(1)
+        self.lgripper.command(self.gripper_closed)
+        self.rgripper.command(self.gripper_closed)
+
 
         ''' wait for gazebo services for teleport '''
         rospy.wait_for_service('/gazebo/get_model_state')
@@ -116,8 +123,9 @@ class actionServer(object):
                 rospy.loginfo("set gripper parser started")
                 self.set_gripper_parser(action)
 
-            elif action["action"] == "teleport":
-                rospy.logwarn("teleport action not made yet")
+            elif action["action"] == "teleport_state":
+                rospy.loginfo("starting teleport")
+                self.teleport_parser(action)
 
             else:
                 rospy.logwarn("method parser invalid action")
@@ -130,6 +138,22 @@ class actionServer(object):
         teleport_dict: dictionary of teleport parameters
         """
         tele_pose = Pose()
+
+        if "location" in teleport_dict:
+            tele_pose = self.read_object(teleport_dict["location"])
+        else:
+            rospy.logerr("no location found")
+
+        if "offset" in teleport_dict:
+            offsets = teleport_dict["offset"]
+            tele_pose.position.x += offsets[0]
+            tele_pose.position.y += offsets[1]
+            tele_pose.position.z += offsets[2]
+        else:
+            rospy.logdebug("no offset ")
+
+        if "orientation" in teleport_dict:
+            rospy.logwarn("no orientation currrenctly")
 
 
         self.teleport(tele_pose)
@@ -278,6 +302,7 @@ class actionServer(object):
 
         else:
             rospy.logwarn("didn't pick a proper arm")
+        rospy.sleep(1)
 
     def set_joint(self, joint, arm):
         """
@@ -298,6 +323,7 @@ class actionServer(object):
 
         else:
             rospy.logwarn("didn't pick a proper arm")
+        rospy.sleep(1)
 
 
 
@@ -328,6 +354,7 @@ class actionServer(object):
 
         else:
             rospy.logwarn("gripper issue")
+        rospy.sleep(1)
 
 
     def teleport(self, location_pose, agent='movo'):
@@ -342,6 +369,7 @@ class actionServer(object):
         teleport_loc.model_name = agent
         teleport_loc.pose = location_pose
         self.set_model_state(teleport_loc)
+        rospy.sleep(1)
 
     def dict_to_pose_msg(self, dict):
         """
