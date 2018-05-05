@@ -21,7 +21,7 @@ def failure_resolution_server(callback):
 if __name__ == "__main__":
     mapper = FailureMapper()
     try:
-        rospy.Subscriber('dsi/resolution_actions', String,  mapper.action_resolution_callback)
+        rospy.Subscriber('dsi/resolution_actions', String,  mapper.update_action_resolution_callback)
         callback = partial(detect_failure, mapper=mapper)
         failure_resolution_server(callback)
     except rospy.ROSInterruptException:

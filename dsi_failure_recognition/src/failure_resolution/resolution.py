@@ -12,8 +12,30 @@ class FailureMapper(object):
     def __init__(self, resolution_actions=None):
         self.resolution_actions = resolution_actions
 
+    def update_action_resolution_callback(self, action_resolution_msg):
+        """
+        Callback method to pass to a 'dsi/resolution_actions' subscriber.
+
+        Parameters
+        ----------
+        action_resolution_msg : ActionResolution
+            ActionResolution messsage from dynamic_skill_injection_msgs
+            package.
+
+        """
+        new_resolution = json.loads(action_resolution_msg.data)
+        failed_action_key = list(new_resolution.keys())[0]
+        resolution_action_key = list(new_resolution[failed_action_key].keys())[0]
+        if(failed_action_key in self.resolution_actions.keys()):
+            self.resolution_actions[failed_action_key][resolution_action_key] = new_resolution[failed_action_key][resolution_action_key]
+        else:
+            self.resolution_actions[failed_action_key] = new_resolution[failed_action_key]
+
+    
     def action_resolution_callback(self, action_resolution_msg):
         """
+        DEPRECATED - leaving this for now in case we do want to implement
+            a full-scale dictionary replaced subscriber
         Callback method to pass to a 'dsi/resolution_actions' subscriber.
 
         Parameters
@@ -42,11 +64,8 @@ class FailureMapper(object):
             found, the resolution_action field will be None.
 
         """
-        resolution_action = self._map_failure_to_resolution(json.loads(request.world_state), request.operator)
-        response = {
-            "resolution_action": resolution_action
-        }
-        return response
+        
+        return self._map_failure_to_resolution(json.loads(request.world_state), request.operator)
 
     def _map_failure_to_resolution(self, world_state, operator):
         """
