@@ -17,25 +17,26 @@ from std_msgs.msg import String
 from dynamic_skill_injection_msgs.msg import TaskNetwork
 
 # GLOBAL VARIABLES
-# FIXME: Should the STATE be locked when a plan is being developed?  How?
 STATE = None
 TN_INFO_PUBLISHER = None
 TASK_COMMAND_PUBLISHER = None
 RESOLUTION_REQUEST_PUBLISHER = None
+RESOLUTION_DB_UPDATE_PUBLISHER = None
 INITIAL_COMMAND = 'fetch:[mug1, table1, on, desk1]'
 
 def main():
 	global queue_lock
-	queue_lock = threading.Lock()
+
 	rospy.init_node("planner_executor")
 	init_listeners()
 	create_publishers()
 	pyhop.declare_operators(move_to, open_door, detect, pickup, set_down, unlock_door, turn_on_lights)
 	pyhop.declare_methods('navigate_to',navigate_to)
 	pyhop.declare_methods('fetch',fetch)
-	rospy.spin()
-	# TODO: Does this go before or after rospy.spin()?
+	raw_input("Press Enter to continue...")
 	command_in(INITIAL_COMMAND)
+	rospy.spin()
+
 
 def execute_plan(task_name, plan):
 	# plan = [('op1', 'arg1', 'arg2'), ('op2', 'arg1', 'arg2')]
@@ -55,7 +56,6 @@ def execute_plan(task_name, plan):
 		expected_effects = get_expected_effects(STATE, expected_state)
 
 		# Publish task_network_info
-		# TODO: publish task network info
 		tn = TaskNetwork()
 		tn.task_name = task_name
 		tn.operator = op_str
@@ -63,14 +63,11 @@ def execute_plan(task_name, plan):
 		TN_INFO_PUBLISHER.publish(tn)
 
 		# Get response from failure_notification_server
-		exec_time = get_operator_exec_time(op_str)
-		# TODO: Change this time delay into wait for message from action_server
-		time.sleep(exec_time)
 		rospy.wait_for_service('failure_notification_server')
 		failure_notifier = rospy.ServiceProxy('failure_notification_server', FailureNotification)
 		success = failure_notifier(json.dumps(expected_effects), json.dumps(STATE))
 
-		if success:
+		if success.data=="True":
 			continue
 		else:
 			# Request resolution steps from failure_resolution_server
@@ -78,18 +75,23 @@ def execute_plan(task_name, plan):
 			failure_resolver = rospy.ServiceProxy('failure_resolution_server', FailureResolution)
 			resolution = failure_resolver(op_str, json.dumps(STATE))
 			# If resolution is None:
-			# TODO: Parse resolution to give None or action with parameters
-			if resolution is None:
+			if resolution.data=="None":
 				# Request recommendation from user
 				RESOLUTION_REQUEST_PUBLISHER.publish('run')
-				resolution = rerospy.wait_for_message("/dsi/human_command", String)
-				# TODO: Parse resolution to give None or action with parameters
-				if resolution is None:
+				resolution = rospy.wait_for_message("/dsi/human_command", String)
+				if resolution.data=="None":
 					return False
+			resolution_data = json.loads(resolution.data)
+
+			# Publish message to update resolution database
+			resolution_update_data = {op_str: resolution_data}
+			RESOLUTION_DB_UPDATE_PUBLISHER.publish(json.dumps(resolution_update_data))
 
 			# Parse resolution into input for PyHOP and get plan, called 'action'
-			# TODO: Confirm that action is properly parsed for input to PyHOP
-			subplan = pyhop.pyhop(STATE, [action], verbose=2)
+			resolution_action_name = resolution_data.keys()[0]
+			params = resolution_data['parameterization']
+			task = tuple(params.insert(0, resolution_action_name))
+			subplan = pyhop.pyhop(STATE, [task], verbose=2)
 			# Execute resolution
 			if subplan is False:
 				print "Error:  Subplan not found."
@@ -122,17 +124,16 @@ def command_in(msg):
 		execute_plan(task_name, plan)
 
 def init_listeners():
-	# TODO: Need to ensure these message names, data types, etc. are correct
-
 	rospy.Subscriber("/dsi/current_world_state", String, world_state_in)
 
 def create_publishers():
 	global TN_INFO_PUBLISHER
-	global TASK_COMMAND_PUBLISHER
+	global RESOLUTION_REQUEST_PUBLISHER
+	global RESOLUTION_DB_UPDATE_PUBLISHER
 	# TODO: Need to make sure the message names, data types, etc. are correct
 	TN_INFO_PUBLISHER = rospy.Publisher('task_network_info', TaskNetwork)
-	TASK_COMMAND_PUBLISHER = rospy.Publisher('task_command', , )
 	RESOLUTION_REQUEST_PUBLISHER = rospy.Publisher('gui_startup', String)
+	RESOLUTION_DB_UPDATE_PUBLISHER = rospy.Publisher('/dsi/resolution_actions')
 
 def get_expected_effects(world_state, expected_state):
 	expected_effects = {}
@@ -148,29 +149,6 @@ def get_expected_effects(world_state, expected_state):
 		if not expected_effects[obj]:
 			expected_effects.pop(obj)
 	return expected_effects
-
-def get_operator_exec_time(op_str):
-	exec_time = None
-	if op_str=='move_to':
-		exec_time = 10.0
-	elif op_str=='open_door':
-		exec_time = 10.0
-	elif op_str=='detect':
-		exec_time = 10.0
-	elif op_str=='pickup':
-		exec_time = 10.0
-	elif op_str=='set_down':
-		exec_time = 10.0
-	elif op_str=='unlock_door':
-		exec_time = 10.0
-	elif op_str=='turn_on_lights':
-		exec_time = 10.0
-	elif op_str=='navigate_to':
-		exec_time = 10.0
-	if exec_time is None:
-		print "Error: Unable to calculate operator exec_time"
-	return exec_time
-
 
 if __name__ == '__main__':
 	main()
