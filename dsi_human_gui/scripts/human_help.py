@@ -3,6 +3,7 @@
 
 import sys
 import rospy
+import json
 import Tkinter as tk
 from std_msgs.msg import String
 
@@ -21,7 +22,7 @@ action_dictionary = {
 	}, 
 	"detect" : {
 		"failure_conditions" : {
-			"lights_on" : False
+
 		},
 		"parameterization" : ["Object"]
 	}, 
@@ -68,18 +69,16 @@ pub = None
 
 
 class UserWindow():
-	master = None
-	action_choice = None
-	instruction_label = None
-	command = None
-	choice_widgets = []
-	parameter_entrys = []
-
-
+	
 	def __init__(self):
 		self.master = tk.Tk()
 		self.master.title("Robot Control Input")
 		self.master.geometry("600x400")
+		self.action_choice = None
+		self.instruction_label = None
+		self.command = None
+		self.choice_widgets = []
+		self.parameter_entrys = []
 		frame = self.createFrame()
 		self.createDropdown()
 		self.master.mainloop()
@@ -101,7 +100,7 @@ class UserWindow():
 		self.instruction_label.configure(text="Specify parameters for command '"+self.command+"':")
 		row_counter = 2
 		self.parameter_entrys=[]
-		for parameter in action_dictionary[self.command]:
+		for parameter in action_dictionary[self.command]['parameterization']:
 			newLabel = tk.Label(self.master)
 			newLabel.grid(column=1, row=row_counter)
 			newLabel.configure(text=parameter)
@@ -125,13 +124,13 @@ class UserWindow():
 		return mainframe
 
 	def submitFinal(self):
-		strCommand = self.command+":{'failure_conditions' : "+str(action_dictionary[self.command]["failure_conditions"]) \
-					+",'parameterization' : ["
+		command = {}
+		command[self.command] = {}
+		command[self.command]["failure_conditions"] = action_dictionary[self.command]["failure_conditions"]
+		command[self.command]["parameterization"] = []
 		for e in self.parameter_entrys:
-			strCommand = strCommand+e.get()+","
-		strCommand = strCommand[:len(strCommand)-1]
-		strCommand = strCommand+"]}"
-		pub.publish(strCommand)
+			command[self.command]["parameterization"].append(e.get())
+		pub.publish(json.dumps(command))
 		self.close()
 
 	def close(self):
