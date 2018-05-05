@@ -112,3 +112,21 @@ class FailureMapper(object):
                 break
 
         return status
+
+
+class ResolutionLibrary():
+
+    def __init__(self, resolution_actions=None):
+        self.resolution_actions = resolution_actions
+
+    def human_command_callback(self, human_command_msg):
+        """
+        Callback method to pass to a 'dsi/resolution_actions' subscriber.
+
+        Parameters
+        ----------
+        human_command_msg : String
+            String messsage from /human_command topic.
+
+        """
+        self.resolution_actions = json.loads(action_resolution_msg.data)
