@@ -64,8 +64,9 @@
     <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
     <atmosphere type='adiabatic'/>
     <physics name='default_physics' default='0' type='ode'>
-      <max_step_size>0.005</max_step_size>
-      <real_time_update_rate>0</real_time_update_rate>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
     </physics>
     <scene>
       <ambient>0.4 0.4 0.4 1</ambient>
@@ -628,146 +629,13 @@
         <self_collide>0</self_collide>
         <kinematic>0</kinematic>
       </link>
-      <pose frame=''>0.298798 4.97409 -1.0 0 -0 0</pose>
-    </model>
-    <model name='cafe_beer'>
-      <static>0</static>
-      <link name='link'>
-        <pose frame=''>0 0 0.061341 0 -0 0</pose>
-        <inertial>
-          <mass>0.2</mass>
-          <inertia>
-            <ixx>0.000305</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.000305</iyy>
-            <iyz>0</iyz>
-            <izz>0.000109</izz>
-          </inertia>
-        </inertial>
-        <collision name='collision'>
-          <geometry>
-            <cylinder>
-              <radius>0.03302</radius>
-              <length>0.122682</length>
-            </cylinder>
-          </geometry>
-          <surface>
-            <friction>
-              <ode>
-                <mu>0.8</mu>
-                <mu2>0.8</mu2>
-              </ode>
-              <torsional>
-                <ode/>
-              </torsional>
-            </friction>
-            <contact>
-              <ode>
-                <kp>1e+06</kp>
-                <kd>1</kd>
-                <max_vel>0</max_vel>
-                <min_depth>0.0001</min_depth>
-              </ode>
-            </contact>
-            <bounce/>
-          </surface>
-          <max_contacts>10</max_contacts>
-        </collision>
-        <visual name='visual'>
-          <geometry>
-            <cylinder>
-              <radius>0.03302</radius>
-              <length>0.122682</length>
-            </cylinder>
-          </geometry>
-          <material>
-            <script>
-              <uri>model://beer/materials/scripts</uri>
-              <uri>model://beer/materials/textures</uri>
-              <name>Beer/Diffuse</name>
-            </script>
-          </material>
-        </visual>
-        <self_collide>0</self_collide>
-        <kinematic>0</kinematic>
-        <gravity>1</gravity>
-      </link>
-      <pose frame=''>0.385376 4.63478 0 0 -0 0</pose>
-    </model>
-    <model name='pringles'>
-      <static>0</static>
-      <link name='link'>
-        <pose frame=''>0 0 0.13335 0 -0 0</pose>
-        <inertial>
-          <mass>0.2</mass>
-          <inertia>
-            <ixx>0.001258</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.001258</iyy>
-            <iyz>0</iyz>
-            <izz>0.000145</izz>
-          </inertia>
-        </inertial>
-        <collision name='collision'>
-          <geometry>
-            <cylinder>
-              <radius>0.03302</radius>
-              <length>0.2667</length>
-            </cylinder>
-          </geometry>
-          <surface>
-            <friction>
-              <ode>
-                <mu>0.8</mu>
-                <mu2>0.8</mu2>
-                <fdir1>0 0 0</fdir1>
-                <slip1>0</slip1>
-                <slip2>0</slip2>
-              </ode>
-              <torsional>
-                <ode/>
-              </torsional>
-            </friction>
-            <contact>
-              <ode>
-                <kp>1e+06</kp>
-                <kd>1</kd>
-                <max_vel>0</max_vel>
-                <min_depth>0.0001</min_depth>
-              </ode>
-            </contact>
-            <bounce/>
-          </surface>
-          <max_contacts>10</max_contacts>
-        </collision>
-        <visual name='visual'>
-          <geometry>
-            <cylinder>
-              <radius>0.03302</radius>
-              <length>0.2667</length>
-            </cylinder>
-          </geometry>
-          <material>
-            <script>
-              <uri>model://pringles/materials/scripts</uri>
-              <uri>model://pringles/materials/textures</uri>
-              <name>pringles/Diffuse</name>
-            </script>
-          </material>
-        </visual>
-        <self_collide>0</self_collide>
-        <kinematic>0</kinematic>
-        <gravity>1</gravity>
-      </link>
-      <pose frame=''>0.424757 5.15739 0 0 -0 0</pose>
+      <pose frame=''>0.298798 4.97409 -1 0 -0 0</pose>
     </model>
     <state world_name='default'>
-      <sim_time>235 725000000</sim_time>
-      <real_time>69 20525612</real_time>
-      <wall_time>1525062888 613708348</wall_time>
-      <iterations>57205</iterations>
+      <sim_time>299 506000000</sim_time>
+      <real_time>66 571993978</real_time>
+      <wall_time>1525492614 145211854</wall_time>
+      <iterations>58378</iterations>
       <model name='blue_5m_room'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <scale>1 1 1</scale>
@@ -796,21 +664,11 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='cafe_beer'>
-        <pose frame=''>0.326114 4.62878 0.598797 -0.000236 -0.00019 0</pose>
-        <scale>1 1 1</scale>
-        <link name='link'>
-          <pose frame=''>0.326103 4.6288 0.660138 -0.000236 -0.00019 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 1e-06 -2e-06 -0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
       <model name='folding_table_4x2'>
-        <pose frame=''>0.298424 4.96322 0.598887 0 -0 0</pose>
+        <pose frame=''>0.965873 -0.014962 0.428571 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose frame=''>0.298424 4.96322 0.598887 0 -0 0</pose>
+          <pose frame=''>0.965873 -0.014962 0.428571 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -826,18 +684,8 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='pringles'>
-        <pose frame=''>0.350042 5.22595 0.598789 4.2e-05 3.3e-05 0</pose>
-        <scale>1 1 1</scale>
-        <link name='link'>
-          <pose frame=''>0.350047 5.22595 0.732139 4.2e-05 3.3e-05 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
       <model name='red_5m_room'>
-        <pose frame=''>0.009312 5.0624 0 0 -0 0</pose>
+        <pose frame=''>0.00931 5.0624 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='Wall_5'>
           <pose frame=''>-2.41569 5.0624 0 0 0 -1.5708</pose>
@@ -870,7 +718,7 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose frame=''>2.84734 2.24262 15.9379 0 1.46979 3.06194</pose>
+        <pose frame=''>2.48137 0.067672 2.9676 0 0.921789 3.05794</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>

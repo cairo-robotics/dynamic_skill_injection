@@ -64,7 +64,6 @@ class FailureMapper(object):
             found, the resolution_action field will be None.
 
         """
-        
         return self._map_failure_to_resolution(json.loads(request.world_state), request.operator)
 
     def _map_failure_to_resolution(self, world_state, operator):
@@ -93,9 +92,10 @@ class FailureMapper(object):
             resolutions = self.resolution_actions[operator]
             for resolution in resolutions.keys():
                 failure_conditions = resolutions[resolution]["failure_conditions"]
+                parameters = resolutions[resolution]["parameterization"]
                 if self._check_world_state_for_conditions(world_state, failure_conditions) is True:
-                    return resolution
-        return None
+                    return resolution, parameters
+        return None, None
 
     def _check_world_state_for_conditions(self, world_state, conditions):
         """
@@ -131,3 +131,21 @@ class FailureMapper(object):
                 break
 
         return status
+
+
+class ResolutionLibrary():
+
+    def __init__(self, resolution_actions=None):
+        self.resolution_actions = resolution_actions
+
+    def human_command_callback(self, human_command_msg):
+        """
+        Callback method to pass to a 'dsi/resolution_actions' subscriber.
+
+        Parameters
+        ----------
+        human_command_msg : String
+            String messsage from /human_command topic.
+
+        """
+        self.resolution_actions = json.loads(human_command_msg.data)
