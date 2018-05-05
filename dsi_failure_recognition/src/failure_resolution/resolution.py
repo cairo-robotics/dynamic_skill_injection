@@ -42,9 +42,10 @@ class FailureMapper(object):
             found, the resolution_action field will be None.
 
         """
-        resolution_action = self._map_failure_to_resolution(json.loads(request.world_state), request.operator)
+        action, parameters = self._map_failure_to_resolution(json.loads(request.world_state), request.operator)
         response = {
-            "resolution_action": resolution_action
+            "resolution_action": action,
+            "parameterization": parameters
         }
         return response
 
@@ -74,9 +75,10 @@ class FailureMapper(object):
             resolutions = self.resolution_actions[operator]
             for resolution in resolutions.keys():
                 failure_conditions = resolutions[resolution]["failure_conditions"]
+                parameters = resolutions[resolution]["parameterization"]
                 if self._check_world_state_for_conditions(world_state, failure_conditions) is True:
-                    return resolution
-        return None
+                    return resolution, parameters
+        return None, None
 
     def _check_world_state_for_conditions(self, world_state, conditions):
         """
@@ -129,4 +131,4 @@ class ResolutionLibrary():
             String messsage from /human_command topic.
 
         """
-        self.resolution_actions = json.loads(action_resolution_msg.data)
+        self.resolution_actions = json.loads(human_command_msg.data)
