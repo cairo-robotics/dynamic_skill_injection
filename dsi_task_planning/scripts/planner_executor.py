@@ -17,9 +17,12 @@ from std_msgs.msg import String
 from dynamic_skill_injection_msgs.msg import TaskNetwork
 
 # GLOBAL VARIABLES
+# FIXME: Should the STATE be locked when a plan is being developed?  How?
 STATE = None
 TN_INFO_PUBLISHER = None
 TASK_COMMAND_PUBLISHER = None
+RESOLUTION_REQUEST_PUBLISHER = None
+INITIAL_COMMAND = 'fetch:[mug1, table1, on, desk1]'
 
 def main():
 	global queue_lock
@@ -31,12 +34,13 @@ def main():
 	pyhop.declare_methods('navigate_to',navigate_to)
 	pyhop.declare_methods('fetch',fetch)
 	rospy.spin()
+	# TODO: Does this go before or after rospy.spin()?
+	command_in(INITIAL_COMMAND)
 
 def execute_plan(task_name, plan):
 	# plan = [('op1', 'arg1', 'arg2'), ('op2', 'arg1', 'arg2')]
-	# For task primitive in plan:
 
-
+	execution_success = True
 	for op_and_params, idx in enumerate(plan):
 		op_str = op_and_params[0]
 		operator = getattr(pd, op_and_params[0])
@@ -58,8 +62,9 @@ def execute_plan(task_name, plan):
 		tn.effect = expected_effects
 		TN_INFO_PUBLISHER.publish(tn)
 
-		# Get response from FailureNotifier
+		# Get response from failure_notification_server
 		exec_time = get_operator_exec_time(op_str)
+		# TODO: Change this time delay into wait for message from action_server
 		time.sleep(exec_time)
 		rospy.wait_for_service('failure_notification_server')
 		failure_notifier = rospy.ServiceProxy('failure_notification_server', FailureNotification)
@@ -68,28 +73,44 @@ def execute_plan(task_name, plan):
 		if success:
 			continue
 		else:
-			# Request resolution steps
+			# Request resolution steps from failure_resolution_server
 			rospy.wait_for_service('failure_resolution_server')
 			failure_resolver = rospy.ServiceProxy('failure_resolution_server', FailureResolution)
 			resolution = failure_resolver(op_str, json.dumps(STATE))
 			# If resolution is None:
-				# Request
+			# TODO: Parse resolution to give None or action with parameters
+			if resolution is None:
+				# Request recommendation from user
+				RESOLUTION_REQUEST_PUBLISHER.publish('run')
+				resolution = rerospy.wait_for_message("/dsi/human_command", String)
+				# TODO: Parse resolution to give None or action with parameters
+				if resolution is None:
+					return False
 
-		#         Execute resolution step
-		#         Retry failed primitive operator
+			# Parse resolution into input for PyHOP and get plan, called 'action'
+			# TODO: Confirm that action is properly parsed for input to PyHOP
+			subplan = pyhop.pyhop(STATE, [action], verbose=2)
+			# Execute resolution
+			if subplan is False:
+				print "Error:  Subplan not found."
+				return False
+			else:
+				execute_plan('Failure Resolution: ' + op_str, subplan)
 
+			# Retry failed operator.  Publish task_command for execution
+			# TODO: publish the command
+	return True
 
 def world_state_in(msg):
 	global STATE
 	STATE = json.loads(msg.data)
 
 def command_in(msg):
-	# TODO: Implement
 	# Parse command and parameters.
-	data_list = msg.data.split(':')
+	data_list = msg.split(':')
 	task_name = data_list[0]
 	task = (task_name)
-	operator_args = ast.literal_eval(data_list[1])
+	operator_args = ast.literal_eval(data_list[1:])
 	for arg in operator_args:
 		task = task + (arg,)
 	# Run PyHOP to get a plan (i.e. list of sequenced primitive operators to execute)
@@ -102,15 +123,16 @@ def command_in(msg):
 
 def init_listeners():
 	# TODO: Need to ensure these message names, data types, etc. are correct
-	rospy.Subscriber("/dsi/human_command", String, command_in)
+
 	rospy.Subscriber("/dsi/current_world_state", String, world_state_in)
 
 def create_publishers():
 	global TN_INFO_PUBLISHER
 	global TASK_COMMAND_PUBLISHER
 	# TODO: Need to make sure the message names, data types, etc. are correct
-	TN_INFO_PUBLISHER = rospy.Publisher('task_network_info', , )
+	TN_INFO_PUBLISHER = rospy.Publisher('task_network_info', TaskNetwork)
 	TASK_COMMAND_PUBLISHER = rospy.Publisher('task_command', , )
+	RESOLUTION_REQUEST_PUBLISHER = rospy.Publisher('gui_startup', String)
 
 def get_expected_effects(world_state, expected_state):
 	expected_effects = {}
