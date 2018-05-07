@@ -28,7 +28,8 @@
       "location_str":["None"],
       "left_hand_empty":["True"],
       "right_hand_empty":["True"],
-      "carrying":["None"]
+      "carrying":["None"],
+      "visible":"True"
     },
     "room":{
       "type": "room",
@@ -40,19 +41,21 @@
       "location_xyz":[0, 0, 0],
       "orientation_rpq":[0, 0, 0],
       "location_str":["None"],
-      "detected":true
+      "visible":"True"
     },
     "non_static":{
       "type":"non_static",
       "location_xyz":[0, 0, 0],
       "orientation_rpq":[0, 0, 0],
-      "location_str":["None"]
+      "location_str":["None"],
+      "visibile":"True"
     },
     "static":{
       "type":"static",
       "location_xyz":[0, 0, 0],
       "orientation_rpq":[0, 0, 0],
-      "location_str":["None"]
+      "location_str":["None"],
+      "visibile":"True"
     },
     "none":{
       "type":"none",
