@@ -55,6 +55,7 @@ class abstractionEngine(object):
 		----------
 		obj_list: list of objects to check relationships for
 		"""
+		#test = raw_input("test")
 		for obj1 in obj_list:
 			obj1_loc_xyz = self.ws_dict[obj1]['location_xyz']
 			#clear relationships between each run
@@ -62,6 +63,8 @@ class abstractionEngine(object):
 			obj1_loc_str = self.ws_dict[obj1]['location_str']
 			obj1_dims = self.ws_dict[obj1]['dimensions']
 			for obj2 in obj_list:
+				if obj1 == obj2:
+					continue
 				obj2_loc_xyz = self.ws_dict[obj2]['location_xyz']
 				obj2_dims = self.ws_dict[obj2]['dimensions']
 				if obj1 is not obj2:

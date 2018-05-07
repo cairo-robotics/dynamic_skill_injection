@@ -3,6 +3,9 @@
 import rospy
 import tf
 import json
+import pdb
+import pprint
+import copy
 from gazebo_msgs.msg import ModelStates
 from geometry_msgs.msg import Pose, Twist
 from std_msgs.msg import String
@@ -33,7 +36,7 @@ class readGazebo(object):
     def parser(self, data):
         """
         takes gazebo data and places into dictionary to be sent out on then
-        world state topic TODO
+        world state topic
 
         Parameters
         ---------
@@ -45,6 +48,7 @@ class readGazebo(object):
 
         self.counter = 0
         self._dict_purge(data.name)
+        publish_string = "{"
         for i, obj_name in enumerate(data.name):
             self._dict_checker(obj_name)
             pose_array = self._pose_to_list(data.pose[i])
@@ -65,13 +69,13 @@ class readGazebo(object):
         """
         try:
             obj_type, obj_base = self._name_to_type(obj_name)
-            self.dict[obj_name] = self.type_primitives[obj_type]
+            self.dict[obj_name] = copy.deepcopy(self.type_primitives[obj_type])
             for key in self.obj_primitives[obj_name]:
-                self.dict[obj_name][key] = self.obj_primitives[obj_base][key]
+                self.dict[obj_name][key] = copy.deepcopy(self.obj_primitives[obj_base][key])
             rospy.loginfo(self.dict[obj_name])
 
-        except:
-            rospy.logerr("error create object: {}".format(obj_name))
+        except Exception as e:
+            rospy.logerr("error create object: {} is :{}".format(obj_name, e))
 
     def _dict_checker(self, obj_name):
         """
@@ -82,9 +86,9 @@ class readGazebo(object):
         ----------
         obj_name: name of object from the gazebo world
         """
-        try:
-            self.dict[obj_name]
-        except:
+        if obj_name in self.dict.keys():
+            return
+        else:
             self._dict_new_obj(obj_name)
             rospy.loginfo("new object {} created".format(obj_name))
 
@@ -97,7 +101,7 @@ class readGazebo(object):
         ----------
         obj_names: list of all objects currenly in gazebo
         """
-        for name in self.dict:
+        for name in self.dict.keys():
             if name in obj_names:
                 pass
             else:
