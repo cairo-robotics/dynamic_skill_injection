@@ -53,5 +53,15 @@
   "teleport_red":[{"action":"teleport_state",
                    "location":"red_5m_room",
                    "offset":[-0.5, 0.0, 0.0],
-                   "orientation":[0.0, 0.0, 0.0]}]
+                   "orientation":[0.0, 0.0, 0.0]}],
+
+  "push_door":[{"action":"pose_arm",
+                "object":"hinged_door",
+                "linear_offset":[-0.2, 0.8, 1.0],
+                "arm":"left"},
+                {"action":"pose_arm",
+                 "object":"hinged_door",
+                 "linear_offset":[0.3, 0.8, 1.0],
+                 "arm":"left"}
+              ]
 }
