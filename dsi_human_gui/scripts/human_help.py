@@ -13,31 +13,31 @@ action_dictionary = {
 
 		},
 		"parameterization" : ["Target"]
-	}, 
+	},
 	"open_door" : {
 		"failure_conditions" : {
 
 		},
 		"parameterization" : ["Door Name"]
-	}, 
+	},
 	"detect" : {
 		"failure_conditions" : {
 
 		},
 		"parameterization" : ["Object"]
-	}, 
+	},
 	"pickup" : {
 		"failure_conditions" : {
 
 		},
 		"parameterization" : ["Object"]
-	}, 
+	},
 	"set_down" : {
 		"failure_conditions" : {
 
 		},
 		"parameterization" : ["Object", "Preposition", "Target"]
-	}, 
+	},
 	"unlock_door" : {
 		"failure_conditions" : {
 
@@ -49,13 +49,13 @@ action_dictionary = {
 
 		},
 		"parameterization" : ["Lights"]
-	}, 
+	},
 	"navigate_to" : {
 		"failure_conditions" : {
 
 		},
 		"parameterization" : ["Target"]
-	}, 
+	},
 	"fetch" : {
 		"failure_conditions" : {
 
@@ -69,7 +69,7 @@ pub = None
 
 
 class UserWindow():
-	
+
 	def __init__(self):
 		self.master = tk.Tk()
 		self.master.title("Robot Control Input")
@@ -90,7 +90,7 @@ class UserWindow():
 		combo.grid(column=2, row=4)
 		self.choice_widgets.append(combo)
 		button1 = tk.Button(self.master, text="Submit Action Choice", command=self.createParameterOptions)
-		button1.grid(row=5, column=3) 
+		button1.grid(row=5, column=3)
 		self.choice_widgets.append(button1)
 
 	def createParameterOptions(self):
@@ -145,8 +145,8 @@ def main():
 	global sub
 	global pub
 	rospy.init_node("Human_Helper")
-	sub = rospy.Subscriber("/gui_startup", String, startGui)
-	pub = rospy.Publisher("/human_command", String, queue_size=1)
+	sub = rospy.Subscriber("/dsi/gui_startup", String, startGui)
+	pub = rospy.Publisher("/dsi/human_command", String, queue_size=1)
 	rospy.spin()
 
 if __name__ == '__main__':
