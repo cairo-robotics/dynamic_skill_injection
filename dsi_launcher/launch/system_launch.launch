@@ -1,0 +1,8 @@
+<launch>
+  <include file="$(find dsi_gazebo)/launch/movo_sim.launch" />
+  <include file="$(find dsi_world_state)/launch/world_state.launch" />
+  <node pkg="dsi_action_server" type="action_server_node.py" name="action_server" output="screen"/>
+  <node pkg="dsi_failure_recognition" type="failure_notification_server.py" name="failure_notification" output="screen"/>
+  <node pkg="dsi_failure_recognition" type="failure_resolution_server.py" name="failure_resolution" output="screen"/>
+  <node pkg="dsi_human_gui" type="human_help.py" name="human_help" output="screen"/>
+</launch>
