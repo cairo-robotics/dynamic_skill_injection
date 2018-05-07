@@ -10,7 +10,10 @@ class FailureMapper(object):
     """
 
     def __init__(self, resolution_actions=None):
-        self.resolution_actions = resolution_actions
+        if(resolution_actions == None):
+            self.resolution_actions = {}
+        else:
+            self.resolution_actions = resolution_actions
 
     def update_action_resolution_callback(self, action_resolution_msg):
         """
@@ -31,7 +34,7 @@ class FailureMapper(object):
         else:
             self.resolution_actions[failed_action_key] = new_resolution[failed_action_key]
 
-    
+
     def action_resolution_callback(self, action_resolution_msg):
         """
         DEPRECATED - leaving this for now in case we do want to implement
@@ -64,11 +67,11 @@ class FailureMapper(object):
             found, the resolution_action field will be None.
 
         """
-        resolution = self._map_failure_to_resolution(json.loads(request.world_state), request.operator)
-        if resolution == None:
+        res, params = self._map_failure_to_resolution(json.loads(request.world_state), request.operator)
+        if(res == None):
             return "None"
         else:
-            return json.dumps(resolution)
+            return json.dumps(res)
 
     def _map_failure_to_resolution(self, world_state, operator):
         """
@@ -109,7 +112,7 @@ class FailureMapper(object):
         Parameters
         ----------
         world_state : dict
-            State dictionary of an object of the WorldState message JSON 
+            State dictionary of an object of the WorldState message JSON
             encoded world state.
         conditions : dict
            Failure conditions required of the resolution action.
@@ -117,7 +120,7 @@ class FailureMapper(object):
         Returns
         ----------
         status : bool
-            Returns a boolean indicating if the current world state contains 
+            Returns a boolean indicating if the current world state contains
             the failure conditions of the
             current resolution being tested.
         """

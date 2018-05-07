@@ -2,14 +2,17 @@
   "abstract_list":[
     "non_static",
     "static",
-    "room"
+    "room",
+    "container",
+    "agent"
   ],
 
   "obj_types":{
     "movo": "agent",
     "blue_5m_room": "room",
     "red_5m_room": "room",
-    "cafe_beer": "non_static",
+    "hinged_door": "non_static",
+    "cafe_beer": "container",
     "beer": "non_static",
     "pringles": "non_static",
     "folding_table_4x2":"static",
@@ -32,6 +35,13 @@
       "location_xyz":[0, 0, 0],
       "orientation_rpq":[0, 0, 0]
     },
+    "container":{
+      "type":"container",
+      "location_xyz":[0, 0, 0],
+      "orientation_rpq":[0, 0, 0],
+      "location_str":["None"],
+      "detected":true
+    },
     "non_static":{
       "type":"non_static",
       "location_xyz":[0, 0, 0],
@@ -52,6 +62,9 @@
   },
 
   "obj_primitives":{
+    "movo":{
+      "dimensions": [0.4, 0.2, 1.0]
+    },
     "beer":{
       "dimensions": [0.12, 0.12, 0.23]
     },
@@ -72,6 +85,12 @@
     "red_5m_room":{
       "dimensions":[5.0, 5.0, 2.5],
       "door": "unconfigured possibly location?"
+    },
+    "hinged_door":{
+      "dimensions":[0.044, 0.914, 2.032]
+    },
+    "ground_plane":{
+      "_comment": "Bullshit"
     }
   }
 }

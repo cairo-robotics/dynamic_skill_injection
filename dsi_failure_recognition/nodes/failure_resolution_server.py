@@ -14,7 +14,7 @@ def detect_failure(req, mapper):
 
 def failure_resolution_server(callback):
     rospy.init_node('failure_resolution_server')
-    s = rospy.Service('failure_resolution_server', FailureResolution, callback)
+    s = rospy.Service('failure_resolution_service', FailureResolution, callback)
     rospy.spin()
 
 

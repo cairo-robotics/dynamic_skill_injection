@@ -6,6 +6,7 @@ Definition of the operators and methods for the planning domain
 
 # Utilities
 def get_tgt_room(state, tgt):
+    #state = state.data
     room = None
     if state[tgt]['type']=='room':
         room = tgt
@@ -42,32 +43,36 @@ def determine_door(state, a, b):
     return door_from_a_to_b
 
 # Define the operators
-def move_to(state, tgt):
+def move_to(state_struct, tgt):
+    state = state_struct.data
     room = get_tgt_room(state, tgt)
-    state['robot1']['location_str'] = [('in', room)]
-    return state
+    state['movo']['location_str'] = [('in', room)]
+    return state_struct
 
-def open_door(state, door):
+def open_door(state_struct, door):
+    state = state_struct.data
     room1 = state[door]['location_str'][0][1]
     room2 = state[door]['location_str'][0][2]
     robot_loc = state['robot1']['location_str']
     if (('in',room1) in robot_loc or ('in',room2) in robot_loc) and not state[door]['locked']:
         state[door]['open'] = True
-        return state
+        return state_struct
     else:
         return False
 
-def detect(state, obj):
+def detect(state_struct, obj):
+    state = state_struct.data
     room = get_tgt_room(state, obj)
     lights = state[room]['lights']
     robot_loc = state['robot1']['location_str']
     if ('in',room) in robot_loc and state[lights]['on']:
         state[obj]['detected'] = True
-        return state
+        return state_struct
     else:
         return False
 
-def pickup(state, obj):
+def pickup(state_struct, obj):
+    state = state_struct.data
     room = get_tgt_room(state, obj)
     robot_loc = state['robot1']['location_str']
     if ('in',room) in robot_loc and state[obj]['detected']:
@@ -78,11 +83,12 @@ def pickup(state, obj):
         else:
             return False
         state['robot1']['carrying'].append(obj)
-        return state
+        return state_struct
     else:
         return False
 
-def set_down(state, obj, preposition, tgt):
+def set_down(state_struct, obj, preposition, tgt):
+    state = state_struct.data
     room = get_tgt_room(state, tgt)
     robot_loc = state['robot1']['location_str']
     if ('in',room) in robot_loc:
@@ -94,32 +100,36 @@ def set_down(state, obj, preposition, tgt):
         state[obj]['location_str'] = [('in'),room]
         if room!=tgt:
             state[obj]['location_str'].append((preposition,tgt))
-        return state
+        return state_struct
     else:
         return False
 
-def unlock_door(state, door):
+def unlock_door(state_struct, door):
+    state = state_struct.data
     room1 = state[door]['location_str'][0][1]
     room2 = state[door]['location_str'][0][2]
     robot_loc = state['robot1']['location_str']
     if ('in',room1) in robot_loc or ('in',room2) in robot_loc:
         state[door]['locked'] = False
-        return state
+        return state_struct
     else:
         return False
 
-def turn_on_lights(state, lights):
+def turn_on_lights(state_struct, lights):
+    state = state_struct.data
     room = state[lights]['location_str'][0][1]
     if ('in',room) in state['robot1']['location_str']:
         state[lights]['on'] = True
-        return state
+        return state_struct
     else:
         return False
 
 # Define the methods
-def navigate_to(state, tgt):
+
+def navigate_to(state_struct, tgt):
+    state = state_struct.data
     robot_loc = state['robot1']['location_str']
-    robot_room = get_tgt_room('robot1')
+    robot_room = get_tgt_room(state, 'robot1')
     path = find_path(state, robot_room, tgt)
     for idx in range(len(path)-1):
         start = path[idx]
@@ -127,17 +137,21 @@ def navigate_to(state, tgt):
         if state[dest]['type']=='room':
             door = determine_door(state, start, dest)
             if door:
-                move_to(state, door)
-                open_door(state, door)
-                move_to(state, dest)
+                move_to(state_struct, door)
+                open_door(state_struct, door)
+                move_to(state_struct, dest)
         else:
-            move_to(state, dest)
-    return state
+            move_to(state_struct, dest)
+    return state_struct
 
-def fetch(state, obj, loc, preposition, tgt):
-    navigate_to(state, loc)
-    detect(state, obj)
-    pickup(state, obj)
-    navigate_to(state, tgt)
-    set_down(state, obj, preposition, tgt)
-    return state
+def fetch(state_struct, obj, loc, preposition, tgt):
+    #navigate_to(state, loc)
+    state = state_struct.data
+    move_to(state_struct, loc)
+    #navigate_to(state_struct, loc)
+    #detect(state_struct, obj)
+    #pickup(state_struct, obj)
+    #navigate_to(state, tgt)
+    #navigate_to(state_struct, tgt)
+    #set_down(state_struct, obj, preposition, tgt)
+    return state_struct

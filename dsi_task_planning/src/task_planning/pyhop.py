@@ -15,7 +15,7 @@ Copyright 2013 Dana S. Nau - http://www.cs.umd.edu/~nau
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-   
+
 Pyhop should work correctly in both Python 2.7 and Python 3.2.
 For examples of how to use it, see the example files that come with Pyhop.
 
@@ -55,25 +55,25 @@ Pyhop provides the following classes and functions:
 - if verbose = 1, it prints the initial parameters and the answer;
 - if verbose = 2, it also prints a message on each recursive call;
 - if verbose = 3, it also prints info about what it's computing.
-"""
+
 
 # Pyhop's planning algorithm is very similar to the one in SHOP and JSHOP
 # (see http://www.cs.umd.edu/projects/shop). Like SHOP and JSHOP, Pyhop uses
 # HTN methods to decompose tasks into smaller and smaller subtasks, until it
-# finds tasks that correspond directly to actions. But Pyhop differs from 
+# finds tasks that correspond directly to actions. But Pyhop differs from
 # SHOP and JSHOP in several ways that should make it easier to use Pyhop
 # as part of other programs:
-# 
+#
 # (1) In Pyhop, one writes methods and operators as ordinary Python functions
 #     (rather than using a special-purpose language, as in SHOP and JSHOP).
-# 
+#
 # (2) Instead of representing states as collections of logical assertions,
 #     Pyhop uses state-variable representation: a state is a Python object
 #     that contains variable bindings. For example, to define a state in
 #     which box b is located in room r1, you might write something like this:
 #     s = State()
 #     s.loc['b'] = 'r1'
-# 
+#
 # (3) You also can define goals as Python objects. For example, to specify
 #     that a goal of having box b in room r2, you might write this:
 #     g = Goal()
@@ -83,18 +83,18 @@ Pyhop provides the following classes and functions:
 #     your methods and operators, and passing g to them as an argument.
 #     In the same fashion, you could tell Pyhop to achieve any one of
 #     several different goals, or to achieve them in some desired sequence.
-# 
+#
 # (4) Unlike SHOP and JSHOP, Pyhop doesn't include a Horn-clause inference
 #     engine for evaluating preconditions of operators and methods. So far,
 #     I've seen no need for it; I've found it easier to write precondition
 #     evaluations directly in Python. But I could consider adding such a
 #     feature if someone convinces me that it's really necessary.
-# 
+#
 # Accompanying this file are several files that give examples of how to use
 # Pyhop. To run them, launch python and type "import blocks_world_examples"
 # or "import simple_travel_example".
 
-
+"""
 from __future__ import print_function
 import copy,sys, pprint
 
@@ -160,7 +160,7 @@ methods = {}
 
 def declare_operators(*op_list):
     """
-    Call this after defining the operators, to tell Pyhop what they are. 
+    Call this after defining the operators, to tell Pyhop what they are.
     op_list must be a list of functions, not strings.
     """
     operators.update({op.__name__:op for op in op_list})
@@ -193,7 +193,7 @@ def print_methods(mlist=methods):
 
 def pyhop(state,tasks,verbose=0):
     """
-    Try to find a plan that accomplishes tasks in state. 
+    Try to find a plan that accomplishes tasks in state.
     If successful, return the plan. Otherwise return False.
     """
     if verbose>0: print('** pyhop, verbose={}: **\n   state = {}\n   tasks = {}'.format(verbose, state.__name__, tasks))
@@ -213,6 +213,7 @@ def seek_plan(state,tasks,plan,depth,verbose=0):
         if verbose>2: print('depth {} returns plan {}'.format(depth,plan))
         return plan
     task1 = tasks[0]
+
     if task1[0] in operators:
         if verbose>2: print('depth {} action {}'.format(depth,task1))
         operator = operators[task1[0]]

@@ -11,10 +11,13 @@ import time
 import ast
 import copy
 
-import planning_domain as pd
-import pyhop
+import task_planning.planning_domain as pd
+import task_planning.pyhop as pyhop
 from std_msgs.msg import String
 from dynamic_skill_injection_msgs.msg import TaskNetwork
+from dsi_action_server.srv import action_service
+from dynamic_skill_injection_msgs.srv import FailureNotification, FailureResolution
+
 
 # GLOBAL VARIABLES
 STATE = None
@@ -22,38 +25,33 @@ TN_INFO_PUBLISHER = None
 TASK_COMMAND_PUBLISHER = None
 RESOLUTION_REQUEST_PUBLISHER = None
 RESOLUTION_DB_UPDATE_PUBLISHER = None
-INITIAL_COMMAND = 'fetch:[mug1, table1, on, desk1]'
+#INITIAL_COMMAND = {'fetch':['cafe_beer', 'blue_5m_room', 'in', 'folding_table_4x2']}
+INITIAL_COMMAND = {'move_to':['blue_5m_room']}
 
-def main():
-	global queue_lock
-
-	rospy.init_node("planner_executor")
-	init_listeners()
-	create_publishers()
-	pyhop.declare_operators(move_to, open_door, detect, pickup, set_down, unlock_door, turn_on_lights)
-	pyhop.declare_methods('navigate_to',navigate_to)
-	pyhop.declare_methods('fetch',fetch)
-	raw_input("Press Enter to continue...")
-	command_in(INITIAL_COMMAND)
-	rospy.spin()
 
 
 def execute_plan(task_name, plan):
 	# plan = [('op1', 'arg1', 'arg2'), ('op2', 'arg1', 'arg2')]
 
 	execution_success = True
-	for op_and_params, idx in enumerate(plan):
+	for idx,  op_and_params in enumerate(plan):
 		op_str = op_and_params[0]
 		operator = getattr(pd, op_and_params[0])
 		op_args = op_and_params[1:]
 
 		# Publish task_command for execution
 		# TODO: publish the command
+		print action_server(json.dumps({"method":"open_close_open"}))
+
 
 		# Determine expected changes to world state as a result of primitive
 		expected_state = copy.deepcopy(STATE)
 		operator(expected_state, *op_args)
-		expected_effects = get_expected_effects(STATE, expected_state)
+		print_dict(expected_state.data)
+		print("OLD STATE")
+		print_dict(STATE.data)
+		expected_effects = get_expected_effects(STATE.data, expected_state.data)
+
 
 		# Publish task_network_info
 		tn = TaskNetwork()
@@ -63,19 +61,22 @@ def execute_plan(task_name, plan):
 		TN_INFO_PUBLISHER.publish(tn)
 
 		# Get response from failure_notification_server
+		print("waiting for failure notification server")
 		rospy.wait_for_service('failure_notification_server')
+		print("failure notification server running")
 		failure_notifier = rospy.ServiceProxy('failure_notification_server', FailureNotification)
-		success = failure_notifier(json.dumps(expected_effects), json.dumps(STATE))
+		success = failure_notifier(json.dumps(expected_effects), json.dumps(STATE.data))
+		print success
 
-		if success.data=="True":
+		if success == "True":
 			continue
 		else:
 			# Request resolution steps from failure_resolution_server
-			rospy.wait_for_service('failure_resolution_server')
-			failure_resolver = rospy.ServiceProxy('failure_resolution_server', FailureResolution)
-			resolution = failure_resolver(op_str, json.dumps(STATE))
+			rospy.wait_for_service('failure_resolution_service')
+			failure_resolver = rospy.ServiceProxy('failure_resolution_service', FailureResolution)
+			resolution = failure_resolver(op_str, json.dumps(STATE.data))
 			# If resolution is None:
-			if resolution.data=="None":
+			if resolution.resolution_action=="None":
 				# Request recommendation from user
 				RESOLUTION_REQUEST_PUBLISHER.publish('run')
 				resolution = rospy.wait_for_message("/dsi/human_command", String)
@@ -89,9 +90,11 @@ def execute_plan(task_name, plan):
 
 			# Parse resolution into input for PyHOP and get plan, called 'action'
 			resolution_action_name = resolution_data.keys()[0]
+			resolution_data = resolution_data[resolution_action_name]
 			params = resolution_data['parameterization']
-			task = tuple(params.insert(0, resolution_action_name))
-			subplan = pyhop.pyhop(STATE, [task], verbose=2)
+			params.insert(0, str(resolution_action_name))
+			task = tuple(params)
+			subplan = pyhop.pyhop(STATE, [task], verbose=3)
 			# Execute resolution
 			if subplan is False:
 				print "Error:  Subplan not found."
@@ -105,50 +108,82 @@ def execute_plan(task_name, plan):
 
 def world_state_in(msg):
 	global STATE
-	STATE = json.loads(msg.data)
+	state_dict = json.loads(msg.data)
+	STATE = pyhop.State('STATE')
+	STATE.data = state_dict
 
 def command_in(msg):
 	# Parse command and parameters.
-	data_list = msg.split(':')
-	task_name = data_list[0]
-	task = (task_name)
-	operator_args = ast.literal_eval(data_list[1:])
-	for arg in operator_args:
-		task = task + (arg,)
+	#TODO parse command and parameters
+	'''
+	task_name = msg.keys()[0]
+	params = msg["fetch"]
+	params.insert(0, str(task_name))
+	task = tuple(params)
+	'''
+	task_name = "dummy"
+	task = [('move_to', 'blue_5m_room')]
 	# Run PyHOP to get a plan (i.e. list of sequenced primitive operators to execute)
-	plan = pyhop.pyhop(STATE, [task], verbose=2)
-	# Execute the plan
+	#print STATE.data
+	#print "pre state"
+	plan = pyhop.pyhop(STATE, task, verbose=2)
+	# Execute the plaz
 	if plan is False:
 		print "Error:  Plan not found."
 	else:
 		execute_plan(task_name, plan)
 
 def init_listeners():
-	rospy.Subscriber("/dsi/current_world_state", String, world_state_in)
+	rospy.Subscriber("/dsi/world_state", String, world_state_in)
 
 def create_publishers():
 	global TN_INFO_PUBLISHER
 	global RESOLUTION_REQUEST_PUBLISHER
 	global RESOLUTION_DB_UPDATE_PUBLISHER
 	# TODO: Need to make sure the message names, data types, etc. are correct
-	TN_INFO_PUBLISHER = rospy.Publisher('task_network_info', TaskNetwork)
-	RESOLUTION_REQUEST_PUBLISHER = rospy.Publisher('gui_startup', String)
-	RESOLUTION_DB_UPDATE_PUBLISHER = rospy.Publisher('/dsi/resolution_actions')
+	TN_INFO_PUBLISHER = rospy.Publisher('task_network_info', TaskNetwork, queue_size=1)
+	RESOLUTION_REQUEST_PUBLISHER = rospy.Publisher('/dsi/gui_startup', String, queue_size=1)
+	RESOLUTION_DB_UPDATE_PUBLISHER = rospy.Publisher('/dsi/resolution_actions', String, queue_size=1)
 
 def get_expected_effects(world_state, expected_state):
 	expected_effects = {}
 	for obj in expected_state:
 		expected_effects[obj] = {}
-		for attr in obj:
+		for attr in world_state[obj]:
 			if type(attr) is list:
 				if sorted(world_state[obj][attr])!=sorted(expected_state[obj][attr]):
 					expected_effects[obj][attr] = expected_state[obj][attr]
 			else:
-				if world_state[obj][attr]!=expected_state[obj][attr]:
+				if world_state[obj][attr] != expected_state[obj][attr]:
 					expected_effects[obj][attr] = expected_state[obj][attr]
 		if not expected_effects[obj]:
 			expected_effects.pop(obj)
 	return expected_effects
+
+def print_dict(dict):
+	for obj in dict:
+		print(obj)
+		for item in dict[obj]:
+			print("{} : {}".format(item, dict[obj][item]))
+
+def main():
+	global queue_lock
+
+	rospy.init_node("planner_executor")
+	''' initialize service action '''
+	rospy.wait_for_service('/dsi/action_server')
+	global action_server
+	action_server = rospy.ServiceProxy('/dsi/action_server', action_service)
+	init_listeners()
+	create_publishers()
+	pyhop.declare_operators(pd.move_to, pd.open_door, pd.detect, pd.pickup, pd.set_down, pd.unlock_door, pd.turn_on_lights)
+	pyhop.declare_methods('navigate_to', pd.navigate_to)
+	pyhop.declare_methods('fetch', pd.fetch)
+	raw_input("Press Enter to continue...")
+	command_in(INITIAL_COMMAND)
+	rospy.spin()
+
+
 
 if __name__ == '__main__':
 	main()
