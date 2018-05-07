@@ -64,7 +64,11 @@ class FailureMapper(object):
             found, the resolution_action field will be None.
 
         """
-        return self._map_failure_to_resolution(json.loads(request.world_state), request.operator)
+        resolution = self._map_failure_to_resolution(json.loads(request.world_state), request.operator)
+        if resolution == None:
+            return "None"
+        else:
+            return json.dumps(resolution)
 
     def _map_failure_to_resolution(self, world_state, operator):
         """
