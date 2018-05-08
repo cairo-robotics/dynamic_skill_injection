@@ -34,7 +34,8 @@
     "room":{
       "type": "room",
       "location_xyz":[0, 0, 0],
-      "orientation_rpq":[0, 0, 0]
+      "orientation_rpq":[0, 0, 0],
+      "lights_on": false
     },
     "container":{
       "type":"container",
