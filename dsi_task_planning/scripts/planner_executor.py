@@ -69,10 +69,7 @@ def execute_plan(task_name, plan):
 		failure_notifier = rospy.ServiceProxy('failure_notification_server', FailureNotification)
 		success = failure_notifier(json.dumps(expected_effects), json.dumps(STATE.data))
 
-		if success.success == True:
-			rospy.loginfo('action was a success')
-			continue
-		else:
+		while(not success.success == True):
 			rospy.loginfo("failure in step {}".format(op_and_params))
 			# Request resolution steps from failure_resolution_server
 			rospy.wait_for_service('failure_resolution_service')
@@ -106,7 +103,28 @@ def execute_plan(task_name, plan):
 				execute_plan('Failure Resolution: ' + op_str, subplan)
 
 			# Retry failed operator.  Publish task_command for execution
+			expected_state = copy.deepcopy(STATE)
+			operator(expected_state, *op_args)
+
+
+			# Publish task_command for execution
 			# TODO: publish the command
+			action_server_command(op_and_params)
+
+
+			# Determine expected changes to world state as a result of primitive
+			expected_effects = get_expected_effects(STATE.data, expected_state.data)
+
+
+			# Publish task_network_info
+			tn.task_name = task_name
+			tn.operator = op_str
+			tn.effect = expected_effects
+			TN_INFO_PUBLISHER.publish(tn)
+
+			# Get response from failure_notification_server
+			success = failure_notifier(json.dumps(expected_effects), json.dumps(STATE.data))
+		rospy.loginfo("Action success")
 	return True
 
 def world_state_in(msg):
