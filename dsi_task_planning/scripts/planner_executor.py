@@ -10,6 +10,7 @@ import threading
 import time
 import ast
 import copy
+import pdb
 
 import task_planning.planning_domain as pd
 import task_planning.pyhop as pyhop
@@ -26,7 +27,7 @@ TASK_COMMAND_PUBLISHER = None
 RESOLUTION_REQUEST_PUBLISHER = None
 RESOLUTION_DB_UPDATE_PUBLISHER = None
 #INITIAL_COMMAND = {'fetch':['cafe_beer', 'blue_5m_room', 'in', 'folding_table_4x2']}
-INITIAL_COMMAND = {'move_to':['blue_5m_room']}
+INITIAL_COMMAND = {'grab_beer':['']}
 
 
 
@@ -39,17 +40,18 @@ def execute_plan(task_name, plan):
 		operator = getattr(pd, op_and_params[0])
 		op_args = op_and_params[1:]
 
+		# pdb.set_trace()
+
+		expected_state = copy.deepcopy(STATE)
+		operator(expected_state, *op_args)
+
+
 		# Publish task_command for execution
 		# TODO: publish the command
-		print action_server(json.dumps({"method":"open_close_open"}))
+		action_server_command(op_and_params)
 
 
 		# Determine expected changes to world state as a result of primitive
-		expected_state = copy.deepcopy(STATE)
-		operator(expected_state, *op_args)
-		print_dict(expected_state.data)
-		print("OLD STATE")
-		print_dict(STATE.data)
 		expected_effects = get_expected_effects(STATE.data, expected_state.data)
 
 
@@ -66,11 +68,12 @@ def execute_plan(task_name, plan):
 		print("failure notification server running")
 		failure_notifier = rospy.ServiceProxy('failure_notification_server', FailureNotification)
 		success = failure_notifier(json.dumps(expected_effects), json.dumps(STATE.data))
-		print success
 
-		if success == "True":
+		if success.success == True:
+			rospy.loginfo('action was a success')
 			continue
 		else:
+			rospy.loginfo("failure in step {}".format(op_and_params))
 			# Request resolution steps from failure_resolution_server
 			rospy.wait_for_service('failure_resolution_service')
 			failure_resolver = rospy.ServiceProxy('failure_resolution_service', FailureResolution)
@@ -112,6 +115,31 @@ def world_state_in(msg):
 	STATE = pyhop.State('STATE')
 	STATE.data = state_dict
 
+def action_server_command(op_and_params):
+	if op_and_params[0] == "move_to":
+		rospy.loginfo("sent move to command")
+		if op_and_params[1] == "red_5m_room":
+			response = action_server(json.dumps({"method":"teleport_red"}))
+
+		elif op_and_params[1] == "blue_5m_room":
+			response = action_server(json.dumps({"method":"teleport_blue"}))
+
+		elif op_and_params[1] == "table":
+			response = action_server(json.dumps({"method":"teleport_table"}))
+
+		else:
+			rospy.logwarn("move_to not found")
+
+	elif  op_and_params[0] == "pickup":
+		rospy.loginfo("sent pickup command")
+		response = action_server(json.dumps({"method":"grab_beer"}))
+		rospy.loginfo("received {} response".format(response))
+	elif op_and_params[0] == "set_down":
+		rospy.loginfo("create setdown command")
+	else:
+		rospy.logwarn("invalid action command operator")
+
+
 def command_in(msg):
 	# Parse command and parameters.
 	#TODO parse command and parameters
@@ -121,8 +149,11 @@ def command_in(msg):
 	params.insert(0, str(task_name))
 	task = tuple(params)
 	'''
-	task_name = "dummy"
-	task = [('move_to', 'blue_5m_room')]
+	task_name = "fetch"
+	#task = [('fetch', 'blue_5m_room')]
+	task = [('move_to', 'red_5m_room'),
+			 ('pickup', 'cafe_beer'),
+			 ('move_to', 'blue_5m_room')]
 	# Run PyHOP to get a plan (i.e. list of sequenced primitive operators to execute)
 	#print STATE.data
 	#print "pre state"
@@ -146,10 +177,13 @@ def create_publishers():
 	RESOLUTION_DB_UPDATE_PUBLISHER = rospy.Publisher('/dsi/resolution_actions', String, queue_size=1)
 
 def get_expected_effects(world_state, expected_state):
+	not_checked = ["location_xyz", "orientation_rpq", "velocity"]
 	expected_effects = {}
 	for obj in expected_state:
 		expected_effects[obj] = {}
 		for attr in world_state[obj]:
+			if attr in not_checked:
+				continue
 			if type(attr) is list:
 				if sorted(world_state[obj][attr])!=sorted(expected_state[obj][attr]):
 					expected_effects[obj][attr] = expected_state[obj][attr]
@@ -176,12 +210,12 @@ def main():
 	action_server = rospy.ServiceProxy('/dsi/action_server', action_service)
 	init_listeners()
 	create_publishers()
-	pyhop.declare_operators(pd.move_to, pd.open_door, pd.detect, pd.pickup, pd.set_down, pd.unlock_door, pd.turn_on_lights)
-	pyhop.declare_methods('navigate_to', pd.navigate_to)
-	pyhop.declare_methods('fetch', pd.fetch)
+	pyhop.declare_operators(pd.move_to, pd.pickup, pd.set_down)
+	#pyhop.declare_methods('navigate_to', pd.navigate_to)
+	#pyhop.declare_methods('fetch', pd.fetch)
 	raw_input("Press Enter to continue...")
 	command_in(INITIAL_COMMAND)
-	rospy.spin()
+	print("finished")
 
 
 
