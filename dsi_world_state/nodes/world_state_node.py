@@ -4,7 +4,7 @@ import rospy
 import rosparam
 import json
 from world_state.read_gazebo import readGazebo
-from world_state.abstraction_engine import abstractionEngine
+from world_state.abstraction_engine import AbstractionEngine
 from dsi_world_state.srv import world_state
 
 
@@ -21,7 +21,7 @@ if __name__ == '__main__':
     world_space_dict = {}
     gazebo_reader = readGazebo(ws_dict=world_space_dict, json_path=config_loc )
     rospy.sleep(1)
-    abstraction_engine = abstractionEngine(world_space_dict, config_loc)
+    abstraction_engine = AbstractionEngine(world_space_dict, config_loc)
 
     ''' world state server works for now'''
     s = rospy.Service('/dsi/world_state_server', world_state, world_state_handler)
