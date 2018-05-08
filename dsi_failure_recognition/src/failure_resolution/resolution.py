@@ -1,4 +1,5 @@
 import json
+import pdb
 
 class FailureMapper(object):
 
@@ -93,16 +94,16 @@ class FailureMapper(object):
             with the corresponding failure resolution action. If no action is
             found, the resolution_action field will be None.
         """
+        print(self.resolution_actions)
         if type(world_state) != dict:
             raise Exception("_map_failure_to_resolution expects world_state argument to be a dict.")
         if self.resolution_actions is not None and operator in self.resolution_actions.keys():
             resolutions = self.resolution_actions[operator]
             for resolution in resolutions.keys():
                 failure_conditions = resolutions[resolution]["failure_conditions"]
-                parameters = resolutions[resolution]["parameterization"]
                 if self._check_world_state_for_conditions(world_state, failure_conditions) is True:
-                    return resolution, parameters
-        return None, None
+                    return resolution
+        return {}
 
     def _check_world_state_for_conditions(self, world_state, conditions):
         """
@@ -124,19 +125,36 @@ class FailureMapper(object):
             the failure conditions of the
             current resolution being tested.
         """
+        pdb.set_trace()
         status = False
-        for key in conditions.keys():
-            if key not in world_state.keys():
-                status = False
-                break
-            ws_value = world_state[key]
-            if ws_value == conditions[key]:
-                status = True
-                continue
-            else:
-                status = False
-                break
-
+        # Loop through the list dictionaries representing a world state condition
+        for condition in conditions:
+            # Each key in the condition represents a world state object, so loop each object of the conditon
+            for key in condition.keys():
+                if key not in world_state.keys():
+                    status = False
+                    break
+                # get condition values and ws_value for object
+                condition_value = condition[key]
+                ws_value = world_state[key]
+                for key, value in condition_value.iteritems():
+                    # if type is list, compare sorted list of value in condition with value in ws
+                    if type(value) == list:
+                        if key in ws_value and type(ws_value[key]) == list:
+                            if sorted(value) == sorted(ws_value[key]):
+                                status = True
+                                continue
+                            else:
+                                status = False
+                                break
+                    # otherwise just compare the values
+                    else:
+                        if value == ws_value[key]:
+                            status = True
+                            continue
+                        else:
+                            status = False
+                            break
         return status
 
 
