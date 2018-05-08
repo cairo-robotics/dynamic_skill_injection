@@ -1,3 +1,7 @@
+DEPENDENCIES:
+-Kinova Movo ROS Workspace
+-Gazebo
+
 TO RUN:
 
 After building and sourcing the workspace, execute "roslaunch dsi\_launcher system\_launch.launch" to launch system backend.
