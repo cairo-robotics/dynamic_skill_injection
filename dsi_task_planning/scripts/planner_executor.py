@@ -43,16 +43,19 @@ def execute_plan(task_name, plan):
 		# pdb.set_trace()
 
 		expected_state = copy.deepcopy(STATE)
+		initial_state = copy.deepcopy(expected_state)
 		operator(expected_state, *op_args)
+
 
 
 		# Publish task_command for execution
 		# TODO: publish the command
 		action_server_command(op_and_params)
 
-
 		# Determine expected changes to world state as a result of primitive
-		expected_effects = get_expected_effects(STATE.data, expected_state.data)
+		expected_effects = get_expected_effects(initial_state.data, expected_state.data)
+
+
 
 
 		# Publish task_network_info
@@ -62,6 +65,7 @@ def execute_plan(task_name, plan):
 		tn.effect = expected_effects
 		TN_INFO_PUBLISHER.publish(tn)
 
+		rospy.sleep(1.1)
 		# Get response from failure_notification_server
 		print("waiting for failure notification server")
 		rospy.wait_for_service('failure_notification_server')
@@ -69,51 +73,60 @@ def execute_plan(task_name, plan):
 		failure_notifier = rospy.ServiceProxy('failure_notification_server', FailureNotification)
 		success = failure_notifier(json.dumps(expected_effects), json.dumps(STATE.data))
 
-		while(not success.success == True):
+		resolution_update_data = None
+		while success.success == False:
 			rospy.loginfo("failure in step {}".format(op_and_params))
 			# Request resolution steps from failure_resolution_server
 			rospy.wait_for_service('failure_resolution_service')
 			failure_resolver = rospy.ServiceProxy('failure_resolution_service', FailureResolution)
-			resolution = failure_resolver(op_str, json.dumps(STATE.data))
+			resolution_response = failure_resolver(op_str, json.dumps(STATE.data))
+			resolution_action = json.loads(resolution_response.resolution_action)
+			if resolution_action == {}:
+				resolution_action = None
+
+			# pdb.set_trace()
 			# If resolution is None:
-			if resolution.resolution_action=="None":
+			if resolution_action == None:
 				# Request recommendation from user
 				RESOLUTION_REQUEST_PUBLISHER.publish('run')
-				resolution = rospy.wait_for_message("/dsi/human_command", String)
-				if resolution.data=="None":
+				human_command_msg = rospy.wait_for_message("/dsi/human_command", String)
+				print(human_command_msg.data)
+				resolution_action = json.loads(human_command_msg.data)
+				if resolution_action == None:
 					return False
-			resolution_data = json.loads(resolution.data)
-
-			# Publish message to update resolution database
-			resolution_update_data = {op_str: resolution_data}
-			RESOLUTION_DB_UPDATE_PUBLISHER.publish(json.dumps(resolution_update_data))
+				resolution_update_data = {op_str: resolution_action}
 
 			# Parse resolution into input for PyHOP and get plan, called 'action'
-			resolution_action_name = resolution_data.keys()[0]
-			resolution_data = resolution_data[resolution_action_name]
+			resolution_action_name = resolution_action.keys()[0]
+			resolution_data = resolution_action[resolution_action_name]
 			params = resolution_data['parameterization']
 			params.insert(0, str(resolution_action_name))
-			task = tuple(params)
-			subplan = pyhop.pyhop(STATE, [task], verbose=3)
-			# Execute resolution
-			if subplan is False:
-				print "Error:  Subplan not found."
-				return False
-			else:
-				execute_plan('Failure Resolution: ' + op_str, subplan)
+			resolution_ops_and_params = tuple(params)
+			# subplan = pyhop.pyhop(STATE, [resolution_ops_and_params], verbose=3)
+			# # Execute resolution
+			# if subplan is False:
+			# 	print "Error:  Subplan not found."
+			# 	return False
+			# else:
+			# 	execute_plan('Failure Resolution: ' + op_str, subplan)
 
+			# Execute resolution action.
+			action_server_command(resolution_ops_and_params)
+
+			rospy.sleep(1.1)
 			# Retry failed operator.  Publish task_command for execution
 			expected_state = copy.deepcopy(STATE)
-			operator(expected_state, *op_args)
-
-
+			initial_state = copy.deepcopy(expected_state)
+			result = operator(expected_state, *op_args)
+			# Determine expected changes to world state as a result of primitive
+			expected_effects = get_expected_effects(initial_state.data, expected_state.data)
+			if result == False:
+				continue
 			# Publish task_command for execution
 			# TODO: publish the command
 			action_server_command(op_and_params)
 
 
-			# Determine expected changes to world state as a result of primitive
-			expected_effects = get_expected_effects(STATE.data, expected_state.data)
 
 
 			# Publish task_network_info
@@ -121,10 +134,15 @@ def execute_plan(task_name, plan):
 			tn.operator = op_str
 			tn.effect = expected_effects
 			TN_INFO_PUBLISHER.publish(tn)
-
+			rospy.sleep(1.1)
 			# Get response from failure_notification_server
 			success = failure_notifier(json.dumps(expected_effects), json.dumps(STATE.data))
 		rospy.loginfo("Action success")
+		if resolution_update_data is not None:
+			rospy.loginfo("Storing resolution action")
+			# Publish message to update resolution database
+			RESOLUTION_DB_UPDATE_PUBLISHER.publish(json.dumps(resolution_update_data))
+
 	return True
 
 def world_state_in(msg):
@@ -154,6 +172,12 @@ def action_server_command(op_and_params):
 		rospy.loginfo("received {} response".format(response))
 	elif op_and_params[0] == "set_down":
 		rospy.loginfo("create setdown command")
+	elif op_and_params[0] == "turn_on_lights":
+		response = action_server(json.dumps({"method":"light_on_spot_0"}))
+		rospy.loginfo("light turned on")
+	elif op_and_params[0] == "turn_off_lights":
+		response = action_server(json.dumps({"method":"light_off_spot_0"}))
+		rospy.loginfo("light turned off")
 	else:
 		rospy.logwarn("invalid action command operator")
 
@@ -170,17 +194,21 @@ def command_in(msg):
 	task_name = "fetch"
 	#task = [('fetch', 'blue_5m_room')]
 	task = [('move_to', 'red_5m_room'),
-			 ('pickup', 'cafe_beer'),
-			 ('move_to', 'blue_5m_room')]
+			('detect', 'cafe_beer'),
+			 ('pickup', 'cafe_beer')]
 	# Run PyHOP to get a plan (i.e. list of sequenced primitive operators to execute)
 	#print STATE.data
 	#print "pre state"
-	plan = pyhop.pyhop(STATE, task, verbose=2)
+	#action_server_command(('turn_on_lights', 'red_5m_room'))
+	#rospy.sleep(1.1)
+	#plan = pyhop.pyhop(STATE, task, verbose=2)
+	#rospy.sleep(1.1)
+	action_server_command(('turn_off_lights', 'red_5m_room'))
 	# Execute the plaz
-	if plan is False:
-		print "Error:  Plan not found."
-	else:
-		execute_plan(task_name, plan)
+	#if plan is False:
+	#	print "Error:  Plan not found."
+	#else:
+	execute_plan(task_name, task)
 
 def init_listeners():
 	rospy.Subscriber("/dsi/world_state", String, world_state_in)
