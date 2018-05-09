@@ -1,11 +1,12 @@
 import json
+import rospy
 # from dynamic_skill_injection_msgs.msg import TaskFailureNotification
 
 
 class TaskFailureDetector(object):
 
     """
-    Class that handles the failure notification service. It detects whether a current task network operator 
+    Class that handles the failure notification service. It detects whether a current task network operator
     fails based on the difference between the expected effects of the operator and the expressed fields in the
     current world state.
     """
@@ -16,7 +17,7 @@ class TaskFailureDetector(object):
         Parameters
         ----------
         request : TaskFailure
-            Incoming TaskFailure.srv request 
+            Incoming TaskFailure.srv request
 
         Returns
         ----------
@@ -83,7 +84,7 @@ class TaskFailureDetector(object):
 
     def check_failure(self, world_state, effects):
         """
-        Iterative compares expected effects designated in the request.effects field with the 
+        Iterative compares expected effects designated in the request.effects field with the
         requestworld_state field. These are decoded JSON dictionaries of dictionaries.
 
         Parameters
@@ -112,7 +113,7 @@ class TaskFailureDetector(object):
             else:
                 expected_effect[key] = effects[key]
                 failure_status = False
-
+        rospy.loginfo("Failure notification: {}. \n Expected effects: {}".format(failure_status, expected_effect))
         return (failure_status, expected_effect)
 
 
@@ -203,7 +204,7 @@ class TaskFailureDetector(object):
 
 #     def check_failure(self):
 #         """
-#         Iterative compares expected effects designated in the task_network_msg effect field with the 
+#         Iterative compares expected effects designated in the task_network_msg effect field with the
 #         world_state_msg world_state field. These are decoded JSON dictionaries of dictionaries.
 
 #         Returns

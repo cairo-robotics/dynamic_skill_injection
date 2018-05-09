@@ -1,4 +1,8 @@
 import json
+import rospy
+import copy
+import pdb
+import pprint
 
 class FailureMapper(object):
 
@@ -26,9 +30,9 @@ class FailureMapper(object):
             package.
 
         """
-        new_resolution = json.loads(action_resolution_msg.data)
-        failed_action_key = list(new_resolution.keys())[0]
-        resolution_action_key = list(new_resolution[failed_action_key].keys())[0]
+        new_resolution = copy.deepcopy(json.loads(action_resolution_msg.data))
+        failed_action_key = new_resolution.keys()[0]
+        resolution_action_key = new_resolution[failed_action_key].keys()[0]
         if(failed_action_key in self.resolution_actions.keys()):
             self.resolution_actions[failed_action_key][resolution_action_key] = new_resolution[failed_action_key][resolution_action_key]
         else:
@@ -67,11 +71,8 @@ class FailureMapper(object):
             found, the resolution_action field will be None.
 
         """
-        res, params = self._map_failure_to_resolution(json.loads(request.world_state), request.operator)
-        if(res == None):
-            return "None"
-        else:
-            return json.dumps(res)
+        res = self._map_failure_to_resolution(json.loads(request.world_state), request.operator)
+        return json.dumps(res)
 
     def _map_failure_to_resolution(self, world_state, operator):
         """
@@ -99,10 +100,9 @@ class FailureMapper(object):
             resolutions = self.resolution_actions[operator]
             for resolution in resolutions.keys():
                 failure_conditions = resolutions[resolution]["failure_conditions"]
-                parameters = resolutions[resolution]["parameterization"]
                 if self._check_world_state_for_conditions(world_state, failure_conditions) is True:
-                    return resolution, parameters
-        return None, None
+                    return {resolution: resolutions[resolution]}
+        return {}
 
     def _check_world_state_for_conditions(self, world_state, conditions):
         """
@@ -124,21 +124,36 @@ class FailureMapper(object):
             the failure conditions of the
             current resolution being tested.
         """
+        # pdb.set_trace()
         status = False
+        # Each key represents an object of the world state.
         for key in conditions.keys():
+            # If the world state does not have the key, failure conditions are not met.
             if key not in world_state.keys():
                 status = False
                 break
+            # get condition values and ws_value for object
+            condition_value = conditions[key]
             ws_value = world_state[key]
-            if ws_value == conditions[key]:
-                status = True
-                continue
-            else:
-                status = False
-                break
-
+            for key, value in condition_value.iteritems():
+                # if type is list, compare sorted list of value in condition with value in ws
+                if type(value) == list:
+                    if key in ws_value and type(ws_value[key]) == list:
+                        if sorted(value) == sorted(ws_value[key]):
+                            status = True
+                            continue
+                        else:
+                            status = False
+                            break
+                # otherwise just compare the values
+                else:
+                    if value == ws_value[key]:
+                        status = True
+                        continue
+                    else:
+                        status = False
+                        break
         return status
-
 
 class ResolutionLibrary():
 
