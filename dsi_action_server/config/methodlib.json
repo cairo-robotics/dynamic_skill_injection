@@ -54,6 +54,15 @@
                    "location":"red_5m_room",
                    "offset":[-0.5, 0.0, 0.0],
                    "orientation":[0.0, 0.0, 0.0]}],
+  "teleport_blue":[{"action":"teleport_state",
+                   "location":"blue_5m_room",
+                   "offset":[-0.5, 0.0, 0.0],
+                   "orientation":[0.0, 0.0, 0.0]}],
+  "teleport_table":[{"action":"teleport_state",
+                   "location":"folding_table_4x2",
+                   "offset":[-0.2, 0.0, 0.0],
+                   "orientation":[0.0, 0.0, 0.0]}],
+
 
   "push_door":[{"action":"pose_arm",
                 "object":"hinged_door",
@@ -63,5 +72,13 @@
                  "object":"hinged_door",
                  "linear_offset":[0.3, 0.8, 1.0],
                  "arm":"left"}
-              ]
+              ],
+  "light_on_spot_0":[{"action":"switch_light",
+                      "target_light":"user_spot_light_0",
+                      "on":true}
+                   ],
+  "light_off_spot_0":[{"action":"switch_light",
+                       "target_light":"user_spot_light_0",
+                       "on":false}
+                     ]
 }

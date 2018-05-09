@@ -9,9 +9,9 @@ import rospkg
 
 import tf
 
-from gazebo_msgs.srv import GetModelState, SetModelState
+from gazebo_msgs.srv import GetModelState, SetModelState, SetLightProperties
 from gazebo_msgs.msg import ModelState
-from std_msgs.msg import String
+from std_msgs.msg import String, ColorRGBA
 from geometry_msgs.msg import Pose
 
 
@@ -67,6 +67,11 @@ class actionServer(object):
         ''' initialize action server service '''
         s = rospy.Service('dsi/action_server', action_service, self.action_service)
 
+        ''' initialize light server '''
+        rospy.wait_for_service('/gazebo/set_light_properties')
+        self.set_light_properties= rospy.ServiceProxy('/gazebo/set_light_properties', SetLightProperties)
+
+        ''' finished initalizing '''
         rospy.loginfo("action server intitialized")
 
 
@@ -101,7 +106,6 @@ class actionServer(object):
 
 
     def dict_method_parser(self, dict_method):
-        #TODO
         """
         takes a method dictionary and sends them to the action parsers
         to be executed by the bot
@@ -127,8 +131,47 @@ class actionServer(object):
                 rospy.loginfo("starting teleport")
                 self.teleport_parser(action)
 
+            elif action["action"] == "switch_light":
+                rospy.loginfo("switch lights")
+                self.switch_lights_parser(action)
+
             else:
                 rospy.logwarn("method parser invalid action")
+
+
+
+    def switch_lights_parser(self, lights_dict):
+        """
+        Parse and use action to switch lights
+
+        Parameters
+        ----------
+        lights_dict: dictionary of light switching parameters
+        """
+        light_name = lights_dict["target_light"]
+        diffuse = ColorRGBA()
+        if lights_dict["on"] == True:
+            diffuse.r = 0.5
+            diffuse.g = 0.5
+            diffuse.b = 0.5
+            diffuse.a = 1.0
+            attenuation_linear = 0.01
+            attenuation_quadratic = 0.001
+
+        elif lights_dict["on"] == False:
+            diffuse.r = 0.0
+            diffuse.g = 0.0
+            diffuse.b = 0.0
+            diffuse.a = 0.0
+            attenuation_linear = 0.00
+            attenuation_quadratic = 0.0000
+
+        else:
+            rospy.logwarn("invalid light on state parsed")
+            return
+
+        self.set_light_properties(light_name, diffuse, 0.0, attenuation_linear, attenuation_quadratic)
+        return
 
     def teleport_parser(self, teleport_dict):
         """

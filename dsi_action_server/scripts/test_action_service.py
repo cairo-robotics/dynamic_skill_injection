@@ -11,7 +11,7 @@ if __name__ == '__main__':
     rospy.init_node("test_node")
     action_server_service = rospy.ServiceProxy('/dsi/action_server',action_service)
 
-    send_string = json.dumps({"method":"push_door"})
+    send_string = json.dumps({"method":"light_off_spot_0"})
 
     print action_server_service(send_string)
     print send_string
