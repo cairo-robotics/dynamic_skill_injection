@@ -10,7 +10,9 @@ from std_msgs.msg import String
 action_dictionary = {
 	"move_to" : {
 		"failure_conditions" : {
-
+			u'movo': {
+				u'right_hand_empty': True
+			}
 		},
 		"parameterization" : ["Target"]
 	},
@@ -28,7 +30,6 @@ action_dictionary = {
 	},
 	"pickup" : {
 		"failure_conditions" : {
-
 		},
 		"parameterization" : ["Object"]
 	},
@@ -46,7 +47,9 @@ action_dictionary = {
 	},
 	"turn_on_lights" : {
 		"failure_conditions" : {
-
+			"red_5m_room" : {
+				"lights_on" : False
+			}
 		},
 		"parameterization" : ["Lights"]
 	},
