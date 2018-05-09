@@ -94,6 +94,7 @@ class FailureMapper(object):
             with the corresponding failure resolution action. If no action is
             found, the resolution_action field will be None.
         """
+        print(self.resolution_actions)
         if type(world_state) != dict:
             raise Exception("_map_failure_to_resolution expects world_state argument to be a dict.")
         if self.resolution_actions is not None and operator in self.resolution_actions.keys():
