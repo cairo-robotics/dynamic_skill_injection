@@ -6,6 +6,7 @@ import json
 import pdb
 import pprint
 import copy
+from gazebo_msgs.srv import GetLightProperties
 from gazebo_msgs.msg import ModelStates
 from geometry_msgs.msg import Pose, Twist
 from std_msgs.msg import String
@@ -33,6 +34,10 @@ class readGazebo(object):
         rospy.Subscriber("/gazebo/model_states", ModelStates, self.parser)
         self.pub_ws = rospy.Publisher("/dsi/world_state", String, queue_size=1)
 
+        ''' initilize light checker '''
+        rospy.wait_for_service('/gazebo/get_light_properties')
+        self.get_light_properties= rospy.ServiceProxy('/gazebo/get_light_properties', GetLightProperties)
+
     def parser(self, data):
         """
         takes gazebo data and places into dictionary to be sent out on then
@@ -57,7 +62,20 @@ class readGazebo(object):
             self.dict[obj_name]["velocity"] = self._twist_to_list(data.twist[i])
             #Just dump whole dict together?
             rospy.logdebug(obj_name + " : " + json.dumps(self.dict[obj_name]))
+
+        ''' check the light state and set the room flag'''
+        spotlight_prop = self.get_light_properties("user_spot_light_0")
+        light_state = spotlight_prop.diffuse.a
+        if "red_5m_room" in self.dict.keys():
+            self.dict["red_5m_room"]["lights_on"] = bool(light_state)
+        else:
+            rospy.logwarn("no red room for lights")
+
         self.pub_ws.publish(json.dumps(self.dict))
+
+
+
+
 
     def _dict_new_obj(self, obj_name):
         """

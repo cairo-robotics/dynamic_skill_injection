@@ -25,38 +25,38 @@
       "type": "agent",
       "location_xyz":[0, 0, 0],
       "orientation_rpq":[0, 0, 0],
-      "location_str":["None"],
-      "left_hand_empty":["True"],
-      "right_hand_empty":["True"],
-      "carrying":["None"],
-      "visible":"True"
+      "location_str":[],
+      "left_hand_empty":true,
+      "right_hand_empty":true,
+      "carrying":[],
+      "visible":true
     },
     "room":{
       "type": "room",
       "location_xyz":[0, 0, 0],
       "orientation_rpq":[0, 0, 0],
-      "lights_on": false
+      "lights_on": true
     },
     "container":{
       "type":"container",
       "location_xyz":[0, 0, 0],
       "orientation_rpq":[0, 0, 0],
-      "location_str":["None"],
-      "visible":"True"
+      "location_str":[],
+      "visible":true
     },
     "non_static":{
       "type":"non_static",
       "location_xyz":[0, 0, 0],
       "orientation_rpq":[0, 0, 0],
-      "location_str":["None"],
-      "visibile":"True"
+      "location_str":[],
+      "visible":true
     },
     "static":{
       "type":"static",
       "location_xyz":[0, 0, 0],
       "orientation_rpq":[0, 0, 0],
-      "location_str":["None"],
-      "visibile":"True"
+      "location_str":[],
+      "visible":true
     },
     "none":{
       "type":"none",
